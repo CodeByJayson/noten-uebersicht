@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Noten Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>📊 Notenübersicht</h1>
+
+<div id="subjects"></div>
+
+<div class="button-wrapper">
+
+  <div class="button-group primary">
+  <button onclick="saveData()">💾 Speichern</button>
+  <button onclick="setGoal()">🎯 Ziel setzen</button>
+  <button onclick="openSettings()">⚙️ Fächer</button>
+  <button onclick="openWarning()">⚠️ Hinweis</button>
+</div>
+
+<div class="button-group analysis-group">
+  <button onclick="analyseWeakness()">📉 Schwächen</button>
+  <button onclick="analysePriority()">🚦 Priorität</button>
+  <button onclick="analyseNeededPerSubject()">🧭 Ziel pro Fach</button>
+  <button onclick="analyseTrend()">📈 Trend</button>
+  <button onclick="analyseStreichfaecher()">🧹 Streich-Fächer</button>
+  <button onclick="analysePuffer()">🛡️ Puffer</button>
+</div>
+
+</div>
+
+
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <h2>⚙️ Fächer konfigurieren</h2>
+
+    <textarea id="subjectsInput" rows="10" style="width:100%"></textarea>
+
+    <p>Format: Ein Fach pro Zeile (z.B. "Mathe (LK)" / "Informatik" (mündlich)" oder "Deutsch")</p>
+    <p>Wichtig: Eine Fächeränderung löscht alle Noten!</p>
+
+    <button onclick="saveSettings()">Speichern</button>
+    <button onclick="closeSettings()">Abbrechen</button>
+  </div>
+</div>
+
+<div id="warningModal" class="modal">
+  <div class="modal-content">
+    <h2>⚠️ Wichtiger Hinweis</h2>
+
+    <p>
+      • Deine Daten werden <b>nur lokal im Browser</b> gespeichert (kein Account, keine Cloud).<br><br>
+
+      • Wenn du Browserdaten löschst oder im privaten Modus bist, gehen alle Noten verloren.<br><br>
+
+      • Die Seite funktioniert nur auf diesem Gerät und wird nicht synchronisiert.<br><br>
+
+      • Alle Berechnungen dienen nur zur Orientierung und sind ohne Gewähr.<br><br>
+
+      • Diese Seite kann erweitert werden, sollte aber nicht die Noten löschen. Bei Anregungen fragt mich.<br><br>
+
+      • Danke, dass du die Seite benutzt. :) Jayson <br><br>
+
+      <b>Achtung:</b><br>
+  Wenn du deine Fächer änderst, können bereits eingetragene Noten
+  nicht mehr korrekt zugeordnet werden und erscheinen möglicherweise als „verloren“.<br><br>
+
+  👉 Empfehlung: Fächer am Anfang festlegen und danach nicht mehr ändern.
+    </p>
+
+    <button onclick="closeWarning()">OK</button>
+  </div>
+</div>
+
+<h2>Gesamtbewertung</h2>
+<p id="result"></p>
+
+<script src="script.js"></script>
+</body>
+</html>
