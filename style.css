@@ -1,141 +1,274 @@
+/* Google Font für den modernen Tech-Look importieren */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Neue, dramatischere Farben für den Hintergrund */
+  --bg-dark: #020617;       /* Tiefes, fast schwarzes Blau */
+  --bg-gradient-start: #0f172a; /* Slate Dunkelblau */
+  --bg-gradient-end: #1e1b4b;   /* Tiefes Indigo/Violett */
+  --glow-1: #38bdf8;         /* Cyan Leuchten */
+  --glow-2: #818cf8;         /* Indigo Leuchten */
+
+  /* Behalte deine restlichen Variablen für Fächer & Buttons bei */
+  --bg-card: rgba(21, 31, 50, 0.7); /* Leicht transparent für Glass-Effekt */
+  --bg-input: #0f172a;
+  --primary: #38bdf8;
+  --primary-hover: #0ea5e9;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  padding: 15px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-main);
+  padding: 30px 20px;
+  margin: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  
+  /* 1. Die Basis: Ein tiefer Linearer Verlauf */
+  background: linear-gradient(
+    135deg, 
+    var(--bg-gradient-start) 0%, 
+    var(--bg-gradient-end) 50%, 
+    var(--bg-dark) 100%
+  );
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative; /* Wichtig für die Positionierung der Lichtpunkte */
+  overflow-x: hidden; /* Verhindert horizontales Scrollen durch die Lichtpunkte */
 }
 
-h1, h2 {
+/* 2. Die "krassen" Lichtpunkte (Glassmorphism Shapes) */
+/* Wir benutzen die ::before und ::after Pseudo-Elemente des Body, 
+   damit wir kein extra HTML brauchen. */
+
+body::before,
+body::after {
+  content: '';
+  position: fixed; /* Bleiben beim Scrollen stehen */
+  border-radius: 50%;
+  opacity: 0.25; /* Subtil, nicht blendend */
+  filter: blur(80px); /* Der Unschärfe-Effekt für das weiche Leuchten */
+  z-index: -1; /* Liegt HINTER allem Inhalt */
+}
+
+/* Lichtpunkt 1: Oben Links, Cyan */
+body::before {
+  width: 400px;
+  height: 400px;
+  background: var(--glow-1);
+  top: -100px;
+  left: -150px;
+}
+
+/* Lichtpunkt 2: Unten Rechts, Violett */
+body::after {
+  width: 500px;
+  height: 500px;
+  background: var(--glow-2);
+  bottom: -150px;
+  right: -200px;
+}
+
+h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
   text-align: center;
+  margin-bottom: 30px;
+  
+  /* WICHTIG: Begrenzt den Hintergrund auf die Textgröße */
+  display: inline-block;
+  width: 100%;
 }
 
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 40px;
+  color: #f1f5f9;
+}
+
+/* Fächer-Grid */
 #subjects {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
   max-width: 1200px;
-  margin: auto;
+  margin: 0 auto 40px auto;
 }
 
 .subject {
-  background: #1e293b;
-  padding: 10px;
-  border-radius: 10px;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.subject:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(56, 189, 248, 0.05);
+}
+
+.subject h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
 }
 
 /* Halbjahr-Zeile */
 .halfyear {
   display: grid;
-  grid-template-columns: 40px 60px 1fr 70px;
+  grid-template-columns: 50px 70px 1fr 60px;
   align-items: center;
-  gap: 8px;
-  margin: 4px 0;
-  border-radius: 6px;
-  padding: 3px;
-  transition: 0.3s;
+  gap: 10px;
+  margin: 8px 0;
+  border-radius: 10px;
+  padding: 6px 10px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
-/* ROT (schlecht) */
-.r1 { background: rgba(239, 68, 68, 0.15); }
-.r2 { background: rgba(239, 68, 68, 0.25); }
-.r3 { background: rgba(239, 68, 68, 0.35); }
-.r4 { background: rgba(239, 68, 68, 0.45); }
-.r5 { background: rgba(239, 68, 68, 0.6); }
 
-/* GELB (mittel) */
-.y1 { background: rgba(250, 204, 21, 0.15); }
-.y2 { background: rgba(250, 204, 21, 0.25); }
-.y3 { background: rgba(250, 204, 21, 0.35); }
-.y4 { background: rgba(250, 204, 21, 0.45); }
-.y5 { background: rgba(250, 204, 21, 0.6); }
 
-/* GRÜN (gut) */
-.g1 { background: rgba(34, 197, 94, 0.15); }
-.g2 { background: rgba(34, 197, 94, 0.25); }
-.g3 { background: rgba(34, 197, 94, 0.35); }
-.g4 { background: rgba(34, 197, 94, 0.45); }
-.g5 { background: rgba(34, 197, 94, 0.6); }
 
-/* Durchschnitt rechts */
+/* =========================================================
+   GRADES (upgraded glow, layout unchanged)
+========================================================= */
+
+/* RED */
+.r1 { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); }
+.r2 { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.3); }
+.r3 { background: rgba(239, 68, 68, 0.32); border-color: rgba(239, 68, 68, 0.4); }
+.r4 { background: rgba(239, 68, 68, 0.45); border-color: rgba(239, 68, 68, 0.5); }
+.r5 { background: rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.7); }
+
+/* YELLOW */
+.y1 { background: rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.15); }
+.y2 { background: rgba(250, 204, 21, 0.25); border-color: rgba(250, 204, 21, 0.25); }
+.y3 { background: rgba(250, 204, 21, 0.32); border-color: rgba(250, 204, 21, 0.35); }
+.y4 { background: rgba(250, 204, 21, 0.45); border-color: rgba(250, 204, 21, 0.45); }
+.y5 { background: rgba(250, 204, 21, 0.5); border-color: rgba(250, 204, 21, 0.6); }
+
+/* GREEN (normal) */
+.g1 { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.15); }
+.g2 { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.25); }
+.g3 { background: rgba(34, 197, 94, 0.32); border-color: rgba(34, 197, 94, 0.35); }
+.g4 { background: rgba(34, 197, 94, 0.45); border-color: rgba(34, 197, 94, 0.45); }
+
+/* =========================================================
+   🔥 BEST GRADE (15 NP / g5) - CYBER LEGEND MODE
+========================================================= */
+
+.g5 {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(0, 255, 153, 0.35), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.25), transparent 55%),
+    linear-gradient(
+      135deg,
+      rgba(34, 197, 94, 0.55),
+      rgba(0, 255, 153, 0.25)
+    );
+
+  border-color: rgba(0, 255, 153, 0.85);
+
+  box-shadow:
+    0 0 15px rgba(0, 255, 153, 0.35),
+    0 0 35px rgba(0, 255, 153, 0.25),
+    0 0 80px rgba(0, 240, 255, 0.15);
+
+  position: relative;
+
+  animation: g5Pulse 2.5s ease-in-out infinite;
+}
+
+/* glow pulse */
+@keyframes g5Pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(0, 255, 153, 0.25),
+      0 0 30px rgba(0, 255, 153, 0.18),
+      0 0 70px rgba(0, 240, 255, 0.12);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow:
+      0 0 20px rgba(0, 255, 153, 0.45),
+      0 0 50px rgba(0, 255, 153, 0.25),
+      0 0 110px rgba(0, 240, 255, 0.18);
+    transform: scale(1.01);
+  }
+}
+
+
+
 .avg {
-  font-size: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-align: right;
-  opacity: 0.8;
+  color: var(--text-muted);
 }
 
-/* Titel kleiner */
-.subject h3 {
-  margin: 5px 0 8px 0;
-}
-
-/* Eingabefelder moderner */
+/* Eingabefelder */
 input {
-  width: 42px;
-  padding: 4px;
-  border-radius: 6px;
+  width: 46px;
+  padding: 6px;
+  border-radius: 8px;
   border: 1px solid #334155;
-  background: #0f172a;
+  background: var(--bg-input);
   color: white;
   text-align: center;
+  font-family: inherit;
+  font-weight: 500;
   outline: none;
-  transition: 0.2s;
+  transition: all 0.2s;
 }
 
-/* Fokus-Effekt */
 input:focus {
-  border-color: #38bdf8;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
   background: #020617;
 }
 
-/* Pfeile entfernen (Chrome, Safari, Edge) */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Kursarbeit hervorheben */
 .klausur {
-  border: 2px solid #38bdf8;
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
 }
 
-/* sonstige Gruppe */
 .sonstige {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px auto;
-  flex-wrap: wrap;
-}
-
-/* Buttons Container */
-.button-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px auto;
-  max-width: 900px;
-}
-
+/* Buttons & Layout-Gruppen */
 .button-wrapper {
   max-width: 1000px;
-  margin: 20px auto;
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .button-group {
   display: grid;
-  gap: 10px;
-  margin: 15px auto;
-  max-width: 1000px;
+  gap: 12px;
+  width: 100%;
 }
 
-/* Standard Desktop */
 .button-group.primary {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
@@ -144,52 +277,341 @@ input::-webkit-inner-spin-button {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
-/* Buttons größer für Touch */
+
+
+/* =========================================================
+   ULTRA CYBERPUNK BUTTONS
+========================================================= */
+
+/* UNIVERSAL BUTTON STYLE */
+
 button {
-  padding: 12px;
-  font-size: 14px;
-  border-radius: 12px;
-  border: none;
-  background: #38bdf8;
-  color: black;
-  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+
+  padding: 14px 22px;
+
+  border-radius: 16px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  font-size: 0.92rem;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+
   cursor: pointer;
-  transition: 0.2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+
+  backdrop-filter: blur(12px);
+
+  text-transform: uppercase;
 }
 
-/* Hover Effekt */
+
+/* animated glow border */
+
+button::before {
+
+  content: "";
+
+  position: absolute;
+  inset: -2px;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      135deg,
+      #00f0ff,
+      #ff00c8,
+      #7c3aed,
+      #00f0ff
+    );
+
+  background-size: 300% 300%;
+
+  opacity: 0;
+
+  z-index: -2;
+
+  transition: opacity 0.3s ease;
+
+  animation: neonBorder 5s linear infinite;
+}
+
+
+/* inner glass layer */
+
+button::after {
+
+  content: "";
+
+  position: absolute;
+
+  inset: 1px;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.02)
+    );
+
+  z-index: -1;
+}
+
+
+/* hover activates animated border */
+
+button:hover::before {
+  opacity: 1;
+}
+
+
+/* hover movement */
+
 button:hover {
-  transform: scale(1.05);
-  background: #0ea5e9;
+
+  transform:
+    translateY(-4px)
+    scale(1.02);
+
 }
 
-/* Bewertung */
-.good { color: #22c55e; }
-.medium { color: #facc15; }
-.bad { color: #ef4444; }
 
+/* click effect */
+
+button:active {
+
+  transform:
+    scale(0.96);
+
+}
+
+
+/* =========================================================
+   PRIMARY BUTTONS
+========================================================= */
+
+.button-group.primary button {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,240,255,0.18),
+      rgba(37,99,255,0.14)
+    );
+
+  color: #ffffff;
+
+  border-color:
+    rgba(0,240,255,0.35);
+
+  box-shadow:
+    0 0 12px rgba(0,240,255,0.15),
+    0 0 30px rgba(0,240,255,0.08);
+
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.35);
+}
+
+
+/* strong neon hover */
+
+.button-group.primary button:hover {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,240,255,0.28),
+      rgba(37,99,255,0.22)
+    );
+
+  border-color:
+    rgba(0,240,255,0.8);
+
+  box-shadow:
+    0 0 20px rgba(0,240,255,0.4),
+    0 0 50px rgba(0,240,255,0.2),
+    0 0 100px rgba(0,240,255,0.12);
+
+}
+
+
+/* =========================================================
+   ANALYSIS BUTTONS
+========================================================= */
+
+.button-group.analysis-group button {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,0,200,0.10),
+      rgba(124,58,237,0.10)
+    );
+
+  color: #f8fafc;
+
+  border-color:
+    rgba(255,0,200,0.16);
+
+  box-shadow:
+    0 0 12px rgba(255,0,200,0.08);
+
+}
+
+
+/* pink/purple hover */
+
+.button-group.analysis-group button:hover {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,0,200,0.20),
+      rgba(124,58,237,0.20)
+    );
+
+  border-color:
+    rgba(255,0,200,0.6);
+
+  box-shadow:
+    0 0 18px rgba(255,0,200,0.28),
+    0 0 45px rgba(124,58,237,0.18);
+
+}
+
+
+/* =========================================================
+   SHINE SWEEP EFFECT
+========================================================= */
+
+button span {
+  position: relative;
+  z-index: 2;
+}
+
+
+button .shine {
+
+  position: absolute;
+
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.28),
+      transparent
+    );
+
+  transform: skewX(-25deg);
+
+  transition: 0.7s;
+}
+
+
+button:hover .shine {
+  left: 140%;
+}
+
+
+/* =========================================================
+   OPTIONAL ICON PULSE
+========================================================= */
+
+button i,
+button svg {
+
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease;
+
+}
+
+
+button:hover i,
+button:hover svg {
+
+  transform:
+    scale(1.15);
+
+  filter:
+    drop-shadow(0 0 8px rgba(255,255,255,0.5));
+
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes neonBorder {
+
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 300% 50%;
+  }
+
+}
+
+/* Bewertungen */
+.good { color: #4ade80; font-weight: 600; }
+.medium { color: #facc15; font-weight: 600; }
+.bad { color: #f87171; font-weight: 600; }
+
+/* Analyse Boxen */
 .analysis {
-  background: #1e293b;
-  padding: 10px;
-  margin: 10px auto;
-  border-radius: 10px;
-  min-width: 400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 16px;
   max-width: 900px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .analysis h3 {
   margin-top: 0;
+  font-size: 1.1rem;
+  color: #f1f5f9;
 }
 
 .analysis p {
-  margin: 6px 0;
+  margin: 8px 0;
+  color: #cbd5e1;
 }
 
 #result {
   display: flex;
   justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
+/* Modernisiertes Modal (Popups) */
 .modal {
   display: none;
   position: fixed;
@@ -197,120 +619,103 @@ button:hover {
   left: 0;
   width: 100%;
   height: 100%;
-
-  background: rgba(0, 0, 0, 0.6);
-
+  background: rgba(4, 7, 12, 0.8);
+  backdrop-filter: blur(8px); /* Weichzeichner für den Hintergrund */
   justify-content: center;
   align-items: center;
-
-  z-index: 999; 
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
 }
 
 .modal.show {
-  display: flex; 
+  display: flex;
 }
 
 .modal-content {
   background: #1e293b;
-  padding: 20px;
-  width: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  width: 460px;
   max-width: 90%;
-  border-radius: 12px;
+  border-radius: 20px;
+  color: #f1f5f9;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.modal-content h2 {
+  text-align: left;
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+
+.modal-content p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+textarea#subjectsInput {
+  background: var(--bg-input);
+  border: 1px solid #334155;
   color: white;
-
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 10px;
 }
 
-
-
-button.warn {
-  color: black;
-}
-button.warn:hover {
-  background: #eab308;
+textarea#subjectsInput:focus {
+  border-color: var(--primary);
 }
 
+/* Modal Buttons */
+.modal-content button {
+  width: 100%;
+  margin-top: 10px;
+}
 
+.modal-content button:last-child {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #334155;
+}
 
+.modal-content button:last-child:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-
-
-
-
-
-
-
-
+/* RESPONSIVE DESIGN */
 
 /* TABLET */
 @media (max-width: 900px) {
-
-  body {
-    font-size: 16px;
-  }
-
-  button {
-    font-size: 15px;
-    padding: 14px;
-    min-height: 44px; 
-    touch-action: manipulation;
-  }
-
-  input {
-    width: 44px;
-    font-size: 14px;
-  }
-
+  body { padding: 20px 15px; }
+  #subjects { grid-template-columns: 1fr; }
   .button-group.primary,
   .button-group.analysis-group {
     grid-template-columns: 1fr 1fr;
-  }
-
-  #subjects {
-    grid-template-columns: 1fr;
   }
 }
 
 /* HANDY */
 @media (max-width: 600px) {
-
-  body {
-    font-size: 17px; /* WICHTIG: lesbarer */
-  }
-
-  h1 {
-    font-size: 22px;
-  }
-
-  h2 {
-    font-size: 18px;
-  }
-
-  button {
-    font-size: 16px;
-    padding: 16px;
-    border-radius: 14px;
-    min-height: 44px; 
-    touch-action: manipulation;
-  }
-
-  input {
-    width: 48px;
-    font-size: 15px;
-  }
-
+  h1 { font-size: 1.8rem; }
   .halfyear {
-    grid-template-columns: 40px 60px 1fr 60px;
+    grid-template-columns: 45px 65px 1fr 55px;
+    gap: 6px;
+    font-size: 0.9rem;
   }
-
+  input { width: 40px; padding: 4px; }
   .button-group.primary,
   .button-group.analysis-group {
-    grid-template-columns: 1fr; /* volle Breite */
-  }
-
-  .analysis {
-    width: 100%;
-    min-width: unset;
+    grid-template-columns: 1fr; /* Volle Breite auf Smartphones */
   }
 }
