@@ -81,19 +81,21 @@ h2 {
 }
 
 /* Halbjahr-Zeile */
+/* =========================================================
+   OPTIMIERTE HALBJAHR-ZEILE (iPad- & Smartphone-safe)
+========================================================= */
 .halfyear {
   display: grid;
-  grid-template-columns: 50px 70px 1fr 60px;
+  /* max-content sorgt dafür, dass die Inputs nur so breit sind wie nötig */
+  grid-template-columns: 3.5rem max-content 1fr auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 8px 0;
   border-radius: 10px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
 }
-
-
 
 
 /* =========================================================
@@ -167,17 +169,28 @@ h2 {
 
 
 
+/* Verhindert, dass die Notengruppe (Klausur + Sonstige) zu breit wird */
+.sonstige {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap; /* Verhindert ungewollten Umbruch auf Tablets */
+}
+
+/* Schiebt den Durchschnitt nicht extrem nach rechts, sondern hält ihn kompakt */
 .avg {
   font-size: 0.85rem;
   font-weight: 600;
   text-align: right;
   color: #ffffff;
+  padding-left: 10px;
+  white-space: nowrap; /* Verhindert, dass "NP" umbricht */
 }
 
 /* Eingabefelder */
+/* Eingabefelder exakt dimensionieren */
 input {
-  width: 46px;
-  padding: 6px;
+  width: 40px; /* Leicht verkleinert für bessere Tablet-Anpassung */
+  padding: 6px 4px;
   border-radius: 8px;
   border: 1px solid #334155;
   background: var(--bg-input);
@@ -204,11 +217,6 @@ input::-webkit-inner-spin-button {
 .klausur {
   border: 2px solid var(--primary);
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
-}
-
-.sonstige {
-  display: flex;
-  gap: 6px;
 }
 
 /* Buttons & Layout-Gruppen */
@@ -650,12 +658,20 @@ textarea#subjectsInput:focus {
   to { opacity: 1; }
 }
 
-/* RESPONSIVE DESIGN */
+/* =========================================================
+   RESPONSIVE DESIGN (Korrektur für iPad & Handy)
+========================================================= */
 
-/* TABLET */
-@media (max-width: 900px) {
-  body { padding: 20px 15px; }
-  #subjects { grid-template-columns: 1fr; }
+/* TABLET (iPad Hoch- & Querformat) */
+@media (max-width: 1024px) {
+  body { padding: 25px 16px; }
+  
+  /* Erlaubt dem Grid, auf dem iPad sauber zu wechseln */
+  #subjects { 
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+    gap: 16px;
+  }
+  
   .button-group.primary,
   .button-group.analysis-group {
     grid-template-columns: 1fr 1fr;
@@ -665,14 +681,27 @@ textarea#subjectsInput:focus {
 /* HANDY */
 @media (max-width: 600px) {
   h1 { font-size: 1.8rem; }
-  .halfyear {
-    grid-template-columns: 45px 65px 1fr 55px;
-    gap: 6px;
-    font-size: 0.9rem;
+  
+  #subjects {
+    grid-template-columns: 1fr;
   }
-  input { width: 40px; padding: 4px; }
+  
+  .halfyear {
+    /* Auf sehr kleinen Bildschirmen leicht kompakter */
+    grid-template-columns: 2.8rem max-content 1fr auto;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  
+  input { 
+    width: 36px; 
+    padding: 4px 2px; 
+    font-size: 0.85rem;
+  }
+  
   .button-group.primary,
   .button-group.analysis-group {
     grid-template-columns: 1fr; /* Volle Breite auf Smartphones */
   }
 }
+
