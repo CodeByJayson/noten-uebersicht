@@ -2,12 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Neue, dramatischere Farben für den Hintergrund */
-  --bg-dark: #020617;       /* Tiefes, fast schwarzes Blau */
-  --bg-gradient-start: #0f172a; /* Slate Dunkelblau */
-  --bg-gradient-end: #1e1b4b;   /* Tiefes Indigo/Violett */
-  --glow-1: #38bdf8;         /* Cyan Leuchten */
-  --glow-2: #818cf8;         /* Indigo Leuchten */
+  /* Einfarbiger, dunkler Hintergrund (Tiefes, fast schwarzes Blau) */
+  --bg-dark: #020617;       
 
   /* Behalte deine restlichen Variablen für Fächer & Buttons bei */
   --bg-card: rgba(21, 31, 50, 0.7); /* Leicht transparent für Glass-Effekt */
@@ -22,50 +18,16 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
+  background-color: var(--bg-dark); /* Einfarbiger Hintergrund direkt hier */
   padding: 30px 20px;
   margin: 0;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  position: relative; /* Wichtig für die Positionierung der Lichtpunkte */
   overflow-x: hidden; /* Verhindert horizontales Scrollen */
 }
 
-/* 1. Der fixierte Hintergrund (iPad-sicher umgesetzt) */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-dark);
-  z-index: -2; /* Liegt ganz unten */
-  pointer-events: none;
-}
-
-/* 2. Die Lichtpunkte (Glassmorphism Shapes) */
-/* Wir nutzen ein zusätzliches Element für das Leuchten */
-body::after {
-  content: '';
-  position: fixed;
-  border-radius: 50%;
-  opacity: 0.25;
-  filter: blur(80px);
-  z-index: -1; /* Liegt ÜBER dem Verlauf, aber UNTER dem Text */
-  pointer-events: none;
-
-  /* Lichtpunkt 1: Oben Links, Cyan */
-  width: 400px;
-  height: 400px;
-  background: var(--glow-1);
-  top: -100px;
-  left: -150px;
-  
-  /* Trick für zwei Punkte in einem Element: box-shadow */
-  /* Das ersetzt den alten zweiten Lichtpunkt, da wir ::before für den Verlauf brauchten */
-  box-shadow: 600px 800px 0 100px var(--glow-2); 
-}
+/* Die alten Pseudo-Elemente (body::before für Verlauf & body::after für Lichtpunkte) wurden gelöscht */
 
 h1 {
   font-size: 2.2rem;
