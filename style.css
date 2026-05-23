@@ -26,50 +26,50 @@ body {
   margin: 0;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  
-  /* 1. Die Basis: Ein tiefer Linearer Verlauf */
+  min-height: 100vh;
+  position: relative; /* Wichtig für die Positionierung der Lichtpunkte */
+  overflow-x: hidden; /* Verhindert horizontales Scrollen */
+}
+
+/* 1. Der fixierte Hintergrund (iPad-sicher umgesetzt) */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(
     135deg, 
     var(--bg-gradient-start) 0%, 
     var(--bg-gradient-end) 50%, 
     var(--bg-dark) 100%
   );
-  background-attachment: fixed;
-  min-height: 100vh;
-  position: relative; /* Wichtig für die Positionierung der Lichtpunkte */
-  overflow-x: hidden; /* Verhindert horizontales Scrollen durch die Lichtpunkte */
+  z-index: -2; /* Liegt ganz unten */
+  pointer-events: none;
 }
 
-/* 2. Die "krassen" Lichtpunkte (Glassmorphism Shapes) */
-/* Wir benutzen die ::before und ::after Pseudo-Elemente des Body, 
-   damit wir kein extra HTML brauchen. */
-
-body::before,
+/* 2. Die Lichtpunkte (Glassmorphism Shapes) */
+/* Wir nutzen ein zusätzliches Element für das Leuchten */
 body::after {
   content: '';
-  position: fixed; /* Bleiben beim Scrollen stehen */
+  position: fixed;
   border-radius: 50%;
-  opacity: 0.25; /* Subtil, nicht blendend */
-  filter: blur(80px); /* Der Unschärfe-Effekt für das weiche Leuchten */
-  z-index: -1; /* Liegt HINTER allem Inhalt */
-}
+  opacity: 0.25;
+  filter: blur(80px);
+  z-index: -1; /* Liegt ÜBER dem Verlauf, aber UNTER dem Text */
+  pointer-events: none;
 
-/* Lichtpunkt 1: Oben Links, Cyan */
-body::before {
+  /* Lichtpunkt 1: Oben Links, Cyan */
   width: 400px;
   height: 400px;
   background: var(--glow-1);
   top: -100px;
   left: -150px;
-}
-
-/* Lichtpunkt 2: Unten Rechts, Violett */
-body::after {
-  width: 500px;
-  height: 500px;
-  background: var(--glow-2);
-  bottom: -150px;
-  right: -200px;
+  
+  /* Trick für zwei Punkte in einem Element: box-shadow */
+  /* Das ersetzt den alten zweiten Lichtpunkt, da wir ::before für den Verlauf brauchten */
+  box-shadow: 600px 800px 0 100px var(--glow-2); 
 }
 
 h1 {
