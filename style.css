@@ -18,24 +18,20 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
-  background-color: var(--bg-dark); /* Einfarbiger Hintergrund direkt hier */
+  background-color: var(--bg-dark);
   padding: 30px 20px;
   margin: 0;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  overflow-x: hidden; /* Verhindert horizontales Scrollen */
+  overflow-x: hidden;
 }
-
-/* Die alten Pseudo-Elemente (body::before für Verlauf & body::after für Lichtpunkte) wurden gelöscht */
 
 h1 {
   font-size: 2.2rem;
   font-weight: 700;
   text-align: center;
   margin-bottom: 30px;
-  
-  /* WICHTIG: Begrenzt den Hintergrund auf die Textgröße */
   display: inline-block;
   width: 100%;
 }
@@ -51,7 +47,7 @@ h2 {
 /* Fächer-Grid */
 #subjects {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 20px;
   max-width: 1200px;
   margin: 0 auto 40px auto;
@@ -80,16 +76,14 @@ h2 {
   padding-bottom: 8px;
 }
 
-/* Halbjahr-Zeile */
 /* =========================================================
-   OPTIMIERTE HALBJAHR-ZEILE (iPad- & Smartphone-safe)
+   IPAD-FIX: FLEXBOX FÜR DIE ZEILENELEMENTE
 ========================================================= */
 .halfyear {
-  display: grid;
-  /* max-content sorgt dafür, dass die Inputs nur so breit sind wie nötig */
-  grid-template-columns: 3.5rem max-content 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between; /* Verteilt Inhalt sauber von links nach rechts */
+  gap: 10px;
   margin: 8px 0;
   border-radius: 10px;
   padding: 6px 12px;
@@ -97,100 +91,38 @@ h2 {
   border: 1px solid transparent;
 }
 
-
-/* =========================================================
-   GRADES (upgraded glow, layout unchanged)
-========================================================= */
-
-/* RED */
-.r1 { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); }
-.r2 { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.3); }
-.r3 { background: rgba(239, 68, 68, 0.32); border-color: rgba(239, 68, 68, 0.4); }
-.r4 { background: rgba(239, 68, 68, 0.45); border-color: rgba(239, 68, 68, 0.5); }
-.r5 { background: rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.7); }
-
-/* YELLOW */
-.y1 { background: rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.15); }
-.y2 { background: rgba(250, 204, 21, 0.25); border-color: rgba(250, 204, 21, 0.25); }
-.y3 { background: rgba(250, 204, 21, 0.32); border-color: rgba(250, 204, 21, 0.35); }
-.y4 { background: rgba(250, 204, 21, 0.45); border-color: rgba(250, 204, 21, 0.45); }
-.y5 { background: rgba(250, 204, 21, 0.5); border-color: rgba(250, 204, 21, 0.6); }
-
-/* GREEN (normal) */
-.g1 { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.15); }
-.g2 { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.25); }
-.g3 { background: rgba(34, 197, 94, 0.32); border-color: rgba(34, 197, 94, 0.35); }
-.g4 { background: rgba(34, 197, 94, 0.45); border-color: rgba(34, 197, 94, 0.45); }
-
-/* =========================================================
-   🔥 BEST GRADE (15 NP / g5) - CYBER LEGEND MODE
-========================================================= */
-
-.g5 {
-  background:
-    radial-gradient(circle at 30% 20%, rgba(0, 255, 153, 0.35), transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.25), transparent 55%),
-    linear-gradient(
-      135deg,
-      rgba(34, 197, 94, 0.55),
-      rgba(0, 255, 153, 0.25)
-    );
-
-  border-color: rgba(0, 255, 153, 0.85);
-
-  box-shadow:
-    0 0 15px rgba(0, 255, 153, 0.35),
-    0 0 35px rgba(0, 255, 153, 0.25),
-    0 0 80px rgba(0, 240, 255, 0.15);
-
-  position: relative;
-
-  animation: g5Pulse 2.5s ease-in-out infinite;
+/* Halbjahr-Beschriftung (z.B. "Q1") bleibt links und stabil */
+.halfyear > span:first-child,
+.halfyear > label:first-child {
+  min-width: 45px;
+  flex-shrink: 0;
 }
 
-/* glow pulse */
-@keyframes g5Pulse {
-  0%, 100% {
-    box-shadow:
-      0 0 12px rgba(0, 255, 153, 0.25),
-      0 0 30px rgba(0, 255, 153, 0.18),
-      0 0 70px rgba(0, 240, 255, 0.12);
-    transform: scale(1);
-  }
-
-  50% {
-    box-shadow:
-      0 0 20px rgba(0, 255, 153, 0.45),
-      0 0 50px rgba(0, 255, 153, 0.25),
-      0 0 110px rgba(0, 240, 255, 0.18);
-    transform: scale(1.01);
-  }
-}
-
-
-
-/* Verhindert, dass die Notengruppe (Klausur + Sonstige) zu breit wird */
+/* Noten-Container (hält Klausur + Sonstige kompakt zusammen) */
 .sonstige {
   display: flex;
-  gap: 6px;
-  flex-wrap: nowrap; /* Verhindert ungewollten Umbruch auf Tablets */
+  gap: 8px;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: center; /* Zentriert die Notenfelder im mittleren Bereich */
 }
 
-/* Schiebt den Durchschnitt nicht extrem nach rechts, sondern hält ihn kompakt */
+/* Der Durchschnitt sitzt nun rechts nah an den Noten, ohne wegzurutschen */
 .avg {
   font-size: 0.85rem;
   font-weight: 600;
   text-align: right;
   color: #ffffff;
-  padding-left: 10px;
-  white-space: nowrap; /* Verhindert, dass "NP" umbricht */
+  min-width: 65px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-/* Eingabefelder */
-/* Eingabefelder exakt dimensionieren */
+/* Eingabefelder exakt und iPad-sicher dimensionieren */
 input {
-  width: 40px; /* Leicht verkleinert für bessere Tablet-Anpassung */
-  padding: 6px 4px;
+  width: 38px !important; /* Erzwingt feste, schmale Breite */
+  max-width: 38px;
+  padding: 6px 0;
   border-radius: 8px;
   border: 1px solid #334155;
   background: var(--bg-input);
@@ -200,6 +132,7 @@ input {
   font-weight: 500;
   outline: none;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 input:focus {
@@ -219,6 +152,39 @@ input::-webkit-inner-spin-button {
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
 }
 
+/* =========================================================
+   GRADES & CYBER LEGEND MODE (Unverändert)
+========================================================= */
+.r1 { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); }
+.r2 { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.3); }
+.r3 { background: rgba(239, 68, 68, 0.32); border-color: rgba(239, 68, 68, 0.4); }
+.r4 { background: rgba(239, 68, 68, 0.45); border-color: rgba(239, 68, 68, 0.5); }
+.r5 { background: rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.7); }
+
+.y1 { background: rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.15); }
+.y2 { background: rgba(250, 204, 21, 0.25); border-color: rgba(250, 204, 21, 0.25); }
+.y3 { background: rgba(250, 204, 21, 0.32); border-color: rgba(250, 204, 21, 0.35); }
+.y4 { background: rgba(250, 204, 21, 0.45); border-color: rgba(250, 204, 21, 0.45); }
+.y5 { background: rgba(250, 204, 21, 0.5); border-color: rgba(250, 204, 21, 0.6); }
+
+.g1 { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.15); }
+.g2 { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.25); }
+.g3 { background: rgba(34, 197, 94, 0.32); border-color: rgba(34, 197, 94, 0.35); }
+.g4 { background: rgba(34, 197, 94, 0.45); border-color: rgba(34, 197, 94, 0.45); }
+
+.g5 {
+  background: radial-gradient(circle at 30% 20%, rgba(0, 255, 153, 0.35), transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.25), transparent 55%), linear-gradient(135deg, rgba(34, 197, 94, 0.55), rgba(0, 255, 153, 0.25));
+  border-color: rgba(0, 255, 153, 0.85);
+  box-shadow: 0 0 15px rgba(0, 255, 153, 0.35), 0 0 35px rgba(0, 255, 153, 0.25), 0 0 80px rgba(0, 240, 255, 0.15);
+  position: relative;
+  animation: g5Pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes g5Pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(0, 255, 153, 0.25), 0 0 30px rgba(0, 255, 153, 0.18), 0 0 70px rgba(0, 240, 255, 0.12); transform: scale(1); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 153, 0.45), 0 0 50px rgba(0, 255, 153, 0.25), 0 0 110px rgba(0, 240, 255, 0.18); transform: scale(1.01); }
+}
+
 /* Buttons & Layout-Gruppen */
 .button-wrapper {
   max-width: 1000px;
@@ -234,320 +200,107 @@ input::-webkit-inner-spin-button {
   width: 100%;
 }
 
-.button-group.primary {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
+.button-group.primary { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.button-group.analysis-group { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
-.button-group.analysis-group {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-
-
-
-/* =========================================================
-   ULTRA CYBERPUNK BUTTONS
-========================================================= */
-
-/* UNIVERSAL BUTTON STYLE */
-
+/* ULTRA CYBERPUNK BUTTONS */
 button {
   position: relative;
   overflow: hidden;
-
   padding: 14px 22px;
-
   border-radius: 16px;
-
   border: 1px solid rgba(255,255,255,0.08);
-
   font-size: 0.92rem;
   font-family: inherit;
   font-weight: 700;
   letter-spacing: 0.6px;
-
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease,
-    background 0.25s ease;
-
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
   backdrop-filter: blur(12px);
-
   text-transform: uppercase;
 }
 
-
-/* animated glow border */
-
 button::before {
-
   content: "";
-
   position: absolute;
   inset: -2px;
-
   border-radius: inherit;
-
-  background:
-    linear-gradient(
-      135deg,
-      #00f0ff,
-      #ff00c8,
-      #7c3aed,
-      #00f0ff
-    );
-
+  background: linear-gradient(135deg, #00f0ff, #ff00c8, #7c3aed, #00f0ff);
   background-size: 300% 300%;
-
   opacity: 0;
-
   z-index: -2;
-
   transition: opacity 0.3s ease;
-
   animation: neonBorder 5s linear infinite;
 }
 
-
-/* inner glass layer */
-
 button::after {
-
   content: "";
-
   position: absolute;
-
   inset: 1px;
-
   border-radius: inherit;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.08),
-      rgba(255,255,255,0.02)
-    );
-
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
   z-index: -1;
 }
 
-
-/* hover activates animated border */
-
-button:hover::before {
-  opacity: 1;
-}
-
-
-/* hover movement */
-
-button:hover {
-
-  transform:
-    translateY(-4px)
-    scale(1.02);
-
-}
-
-
-/* click effect */
-
-button:active {
-
-  transform:
-    scale(0.96);
-
-}
-
-
-/* =========================================================
-   PRIMARY BUTTONS
-========================================================= */
+button:hover::before { opacity: 1; }
+button:hover { transform: translateY(-4px) scale(1.02); }
+button:active { transform: scale(0.96); }
 
 .button-group.primary button {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0,240,255,0.18),
-      rgba(37,99,255,0.14)
-    );
-
+  background: linear-gradient(135deg, rgba(0,240,255,0.18), rgba(37,99,255,0.14));
   color: #ffffff;
-
-  border-color:
-    rgba(0,240,255,0.35);
-
-  box-shadow:
-    0 0 12px rgba(0,240,255,0.15),
-    0 0 30px rgba(0,240,255,0.08);
-
-  text-shadow:
-    0 0 10px rgba(255,255,255,0.35);
+  border-color: rgba(0,240,255,0.35);
+  box-shadow: 0 0 12px rgba(0,240,255,0.15), 0 0 30px rgba(0,240,255,0.08);
+  text-shadow: 0 0 10px rgba(255,255,255,0.35);
 }
-
-
-/* strong neon hover */
 
 .button-group.primary button:hover {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0,240,255,0.28),
-      rgba(37,99,255,0.22)
-    );
-
-  border-color:
-    rgba(0,240,255,0.8);
-
-  box-shadow:
-    0 0 20px rgba(0,240,255,0.4),
-    0 0 50px rgba(0,240,255,0.2),
-    0 0 100px rgba(0,240,255,0.12);
-
+  background: linear-gradient(135deg, rgba(0,240,255,0.28), rgba(37,99,255,0.22));
+  border-color: rgba(0,240,255,0.8);
+  box-shadow: 0 0 20px rgba(0,240,255,0.4), 0 0 50px rgba(0,240,255,0.2), 0 0 100px rgba(0,240,255,0.12);
 }
-
-
-/* =========================================================
-   ANALYSIS BUTTONS
-========================================================= */
 
 .button-group.analysis-group button {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,0,200,0.10),
-      rgba(124,58,237,0.10)
-    );
-
+  background: linear-gradient(135deg, rgba(255,0,200,0.10), rgba(124,58,237,0.10));
   color: #f8fafc;
-
-  border-color:
-    rgba(255,0,200,0.16);
-
-  box-shadow:
-    0 0 12px rgba(255,0,200,0.08);
-
+  border-color: rgba(255,0,200,0.16);
+  box-shadow: 0 0 12px rgba(255,0,200,0.08);
 }
-
-
-/* pink/purple hover */
 
 .button-group.analysis-group button:hover {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,0,200,0.20),
-      rgba(124,58,237,0.20)
-    );
-
-  border-color:
-    rgba(255,0,200,0.6);
-
-  box-shadow:
-    0 0 18px rgba(255,0,200,0.28),
-    0 0 45px rgba(124,58,237,0.18);
-
+  background: linear-gradient(135deg, rgba(255,0,200,0.20), rgba(124,58,237,0.20));
+  border-color: rgba(255,0,200,0.6);
+  box-shadow: 0 0 18px rgba(255,0,200,0.28), 0 0 45px rgba(124,58,237,0.18);
 }
 
-
-/* =========================================================
-   SHINE SWEEP EFFECT
-========================================================= */
-
-button span {
-  position: relative;
-  z-index: 2;
-}
-
-
+button span { position: relative; z-index: 2; }
 button .shine {
-
   position: absolute;
-
   top: 0;
   left: -120%;
-
   width: 60%;
   height: 100%;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255,255,255,0.28),
-      transparent
-    );
-
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
   transform: skewX(-25deg);
-
   transition: 0.7s;
 }
 
-
-button:hover .shine {
-  left: 140%;
-}
-
-
-/* =========================================================
-   OPTIONAL ICON PULSE
-========================================================= */
-
-button i,
-button svg {
-
-  transition:
-    transform 0.25s ease,
-    filter 0.25s ease;
-
-}
-
-
-button:hover i,
-button:hover svg {
-
-  transform:
-    scale(1.15);
-
-  filter:
-    drop-shadow(0 0 8px rgba(255,255,255,0.5));
-
-}
-
-
-/* =========================================================
-   ANIMATIONS
-========================================================= */
+button:hover .shine { left: 140%; }
+button:hover i, button:hover svg { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
 
 @keyframes neonBorder {
-
-  0% {
-    background-position: 0% 50%;
-  }
-
-  100% {
-    background-position: 300% 50%;
-  }
-
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
 }
 
-/* Bewertungen */
 .good { color: #4ade80; font-weight: 600; }
 .medium { color: #facc15; font-weight: 600; }
 .bad { color: #f87171; font-weight: 600; }
 
-/* Analyse Boxen */
 .analysis {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -558,118 +311,58 @@ button:hover svg {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.analysis h3 {
-  margin-top: 0;
-  font-size: 1.1rem;
-  color: #f1f5f9;
-}
+.analysis h3 { margin-top: 0; font-size: 1.1rem; color: #f1f5f9; }
+.analysis p { margin: 8px 0; color: #cbd5e1; }
+#result { display: flex; justify-content: center; font-size: 1.2rem; font-weight: 500; }
 
-.analysis p {
-  margin: 8px 0;
-  color: #cbd5e1;
-}
-
-#result {
-  display: flex;
-  justify-content: center;
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-/* Modernisiertes Modal (Popups) */
+/* Modals */
 .modal {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(4, 7, 12, 0.8);
-  backdrop-filter: blur(8px); /* Weichzeichner für den Hintergrund */
-  justify-content: center;
-  align-items: center;
+  backdrop-filter: blur(8px);
+  justify-content: center; align-items: center;
   z-index: 999;
   animation: fadeIn 0.2s ease;
 }
 
-.modal.show {
-  display: flex;
-}
-
+.modal.show { display: flex; }
 .modal-content {
   background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 30px;
-  width: 460px;
-  max-width: 90%;
-  border-radius: 20px;
-  color: #f1f5f9;
+  padding: 30px; width: 460px; max-width: 90%;
+  border-radius: 20px; color: #f1f5f9;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-.modal-content h2 {
-  text-align: left;
-  margin-top: 0;
-  font-size: 1.4rem;
-}
-
-.modal-content p {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
+.modal-content h2 { text-align: left; margin-top: 0; font-size: 1.4rem; }
+.modal-content p { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; }
 
 textarea#subjectsInput {
   background: var(--bg-input);
   border: 1px solid #334155;
-  color: white;
-  border-radius: 10px;
-  padding: 12px;
-  font-family: inherit;
-  font-size: 0.95rem;
-  outline: none;
-  resize: vertical;
-  margin-bottom: 10px;
+  color: white; border-radius: 10px; padding: 12px;
+  font-family: inherit; font-size: 0.95rem;
+  outline: none; resize: vertical; margin-bottom: 10px;
 }
 
-textarea#subjectsInput:focus {
-  border-color: var(--primary);
-}
+textarea#subjectsInput:focus { border-color: var(--primary); }
+.modal-content button { width: 100%; margin-top: 10px; }
+.modal-content button:last-child { background: transparent; color: #94a3b8; border: 1px solid #334155; }
+.modal-content button:last-child:hover { background: rgba(255, 255, 255, 0.05); color: white; }
 
-/* Modal Buttons */
-.modal-content button {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.modal-content button:last-child {
-  background: transparent;
-  color: #94a3b8;
-  border: 1px solid #334155;
-}
-
-.modal-content button:last-child:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* =========================================================
-   RESPONSIVE DESIGN (Korrektur für iPad & Handy)
+   RESPONSIVE DESIGN (Für iPad optimiert)
 ========================================================= */
-
-/* TABLET (iPad Hoch- & Querformat) */
 @media (max-width: 1024px) {
-  body { padding: 25px 16px; }
+  body { padding: 20px 15px; }
   
-  /* Erlaubt dem Grid, auf dem iPad sauber zu wechseln */
   #subjects { 
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); 
+    gap: 15px;
   }
   
   .button-group.primary,
@@ -678,30 +371,24 @@ textarea#subjectsInput:focus {
   }
 }
 
-/* HANDY */
 @media (max-width: 600px) {
   h1 { font-size: 1.8rem; }
-  
-  #subjects {
-    grid-template-columns: 1fr;
-  }
+  #subjects { grid-template-columns: 1fr; }
   
   .halfyear {
-    /* Auf sehr kleinen Bildschirmen leicht kompakter */
-    grid-template-columns: 2.8rem max-content 1fr auto;
-    gap: 8px;
     padding: 6px 8px;
+    gap: 6px;
   }
   
+  .halfyear > span:first-child { min-width: 35px; }
+  
   input { 
-    width: 36px; 
-    padding: 4px 2px; 
-    font-size: 0.85rem;
+    width: 34px !important; 
+    font-size: 0.85rem; 
   }
   
   .button-group.primary,
   .button-group.analysis-group {
-    grid-template-columns: 1fr; /* Volle Breite auf Smartphones */
+    grid-template-columns: 1fr;
   }
 }
-
