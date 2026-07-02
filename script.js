@@ -83,6 +83,36 @@ function getAllNotes() {
   return values;
 }
 
+// Gewichteter Schnitt (LKs zählen doppelt, wie im echten Abi)
+function getWeightedAverage() {
+  let weightedSum = 0;
+  let weightedCount = 0;
+
+  subjects.forEach((sub, i) => {
+    const isLK = sub.name.includes("(LK)");
+    const gewicht = isLK ? 2 : 1;
+
+    for (let h = 1; h <= 4; h++) {
+      const k = parseFloat(document.getElementById(`k${i}_${h}`).value);
+
+      let sonstArr = [];
+      for (let s = 1; s <= 5; s++) {
+        let val = parseFloat(document.getElementById(`s${i}_${h}_${s}`).value);
+        if (!isNaN(val)) sonstArr.push(val);
+      }
+
+      const note = calcNote(k, sonstArr);
+
+      if (note !== null) {
+        weightedSum += note * gewicht;
+        weightedCount += gewicht;
+      }
+    }
+  });
+
+  return weightedCount > 0 ? weightedSum / weightedCount : null;
+}
+
 function calcNote(k, sonstArr) {
   if (!isNaN(k) && sonstArr.length > 0) {
     const sonstAvg = sonstArr.reduce((a, b) => a + b, 0) / sonstArr.length;
@@ -149,6 +179,12 @@ const avg = values.length ? values.reduce((a,b)=>a+b,0) / values.length : 0;
   if (avg >= 10) text += " → Gut 👍";
   else if (avg >= 7) text += " → Mittel ⚠️";
   else text += " → Kritisch ❗";
+
+  const weightedAvg = getWeightedAverage();
+  if (weightedAvg !== null) {
+    text += `<br><span style="opacity:0.85;">Realer Schnitt (LKs ×2 gewichtet): ${weightedAvg.toFixed(2)} Punkte</span>`;
+    text += `<br><span style="font-size:0.85em; opacity:0.7;">ℹ️ Der obere Wert zählt alle Fächer gleich, der reale Schnitt gewichtet LKs wie im echten Abitur doppelt – daher können sich die Werte unterscheiden.</span>`;
+  }
 
   const goal = localStorage.getItem("goal");
   if (goal) text += `<br>Ziel: ${goal} Punkte`;
@@ -396,8 +432,111 @@ function analyseNeededPerSubject() {
   document.getElementById("result").innerHTML = html;
 }
 
+
+// Text-Übersicht aller Noten
+function showOverview() {
+  const semesterNames = ["11/1", "11/2", "12/1", "12/2"];
+  let text = "";
+  
+  // Arrays für die Berechnung der Halbjahresschnitte
+  let semesterSums = [0, 0, 0, 0];
+  let semesterCounts = [0, 0, 0, 0];
+
+  subjects.forEach((sub, i) => {
+    let subjectHasData = false;
+    let subjectText = `${sub.name}:\n`;
+    let subjectNotes = [];
+
+    for (let h = 1; h <= 4; h++) {
+      const kVal = document.getElementById(`k${i}_${h}`).value;
+
+      let sonstArr = [];
+      for (let s = 1; s <= 5; s++) {
+        const v = document.getElementById(`s${i}_${h}_${s}`).value;
+        if (v !== "") sonstArr.push(v);
+      }
+
+      if (kVal === "" && sonstArr.length === 0) continue;
+
+      subjectHasData = true;
+
+      const k = parseFloat(kVal);
+      const sonstNum = sonstArr.map(parseFloat);
+      const note = calcNote(k, sonstNum);
+
+      if (note !== null) {
+        subjectNotes.push(note);
+        // Für den Halbjahresschnitt sammeln
+        semesterSums[h - 1] += note;
+        semesterCounts[h - 1]++;
+      }
+
+      const kDisplay = (kVal || "-").padEnd(2, " ");
+      const sonstDisplay = sonstArr.length ? sonstArr.join(", ") : "-";
+      const avgDisplay = note !== null ? `Ø ${note.toFixed(2)}` : "Ø -";
+
+      subjectText += `  ${semesterNames[h - 1]}: ${kDisplay} / ${sonstDisplay.padEnd(20, " ")} ${avgDisplay}\n`;
+    }
+
+    if (subjectHasData) {
+      const subjectAvg = subjectNotes.length
+        ? subjectNotes.reduce((a, b) => a + b, 0) / subjectNotes.length
+        : null;
+
+      if (subjectAvg !== null) {
+        subjectText += `  Gesamtschnitt: ${subjectAvg.toFixed(2)}\n`;
+      }
+
+      text += subjectText + "\n";
+    }
+  });
+
+  if (text === "") {
+    text = "Noch keine Noten eingetragen.";
+  }
+
+  window.currentOverviewText = text;
+
+  // HTML für die 4 Halbjahresdurchschnitte generieren
+  let semesterHtml = `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">`;
+  semesterNames.forEach((name, idx) => {
+    const semAvg = semesterCounts[idx] > 0 ? (semesterSums[idx] / semesterCounts[idx]).toFixed(2) : "-";
+    semesterHtml += `
+      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+        <b style="font-size: 0.9em; color: #aaa;">${name} Schnitt</b><br>
+        <span style="font-size: 1.2em; font-weight: bold;">${semAvg}</span>
+      </div>`;
+  });
+  semesterHtml += `</div>`;
+
+  const html = `
+    <div class="analysis">
+      <h3>📋 Alle Noten – Übersicht</h3>
+      ${semesterHtml}
+      <button onclick="copyOverview()">📋 In Zwischenablage kopieren</button>
+      <hr>
+      <pre id="overviewText" style="white-space:pre-wrap; text-align:left; font-family: monospace;">${text}</pre>
+    </div>
+  `;
+
+  document.getElementById("result").innerHTML = html;
+}
+
+// Übersicht kopieren
+function copyOverview() {
+  navigator.clipboard.writeText(window.currentOverviewText || "").then(() => {
+    alert("✅ In Zwischenablage kopiert!");
+  }).catch(() => {
+    alert("❌ Kopieren fehlgeschlagen. Bitte manuell markieren.");
+  });
+}
+
+
 // Trend-Analyse
 function analyseTrend() {
+  const semesterNames = ["11/1", "11/2", "12/1", "12/2"];
+  let semesterSums = [0, 0, 0, 0];
+  let semesterCounts = [0, 0, 0, 0];
 
   let html = `
     <div class="analysis">
@@ -406,11 +545,9 @@ function analyseTrend() {
   `;
 
   subjects.forEach((sub, i) => {
-
     let values = [];
 
     for (let h = 1; h <= 4; h++) {
-
       const k = parseFloat(document.getElementById(`k${i}_${h}`).value);
 
       let sonstArr = [];
@@ -419,40 +556,76 @@ function analyseTrend() {
         if (!isNaN(val)) sonstArr.push(val);
       }
 
-      if (!isNaN(k) && sonstArr.length > 0) {
-        const avg = sonstArr.reduce((a,b)=>a+b,0) / sonstArr.length;
-        const note = calcNote(k, sonstArr);
+      const note = calcNote(k, sonstArr);
+      if (note !== null) {
         values.push(note);
+        // Für den allgemeinen Halbjahresschnitt sammeln
+        semesterSums[h - 1] += note;
+        semesterCounts[h - 1]++;
       }
     }
 
     if (values.length >= 2) {
-
       const first = values[0];
       const last = values[values.length - 1];
 
       let trend = "";
-let emoji = "";
+      let emoji = "";
+      const diff = last - first;
 
-const diff = last - first;
-
-if (diff > 0.5) {
-  emoji = "🟢";
-  trend = "verbessert";
-} else if (diff < -0.5) {
-  emoji = "🔴";
-  trend = "verschlechtert";
-} else {
-  emoji = "🟡";
-  trend = "stabil";
-}
+      if (diff > 0.5) {
+        emoji = "🟢";
+        trend = "verbessert";
+      } else if (diff < -0.5) {
+        emoji = "🔴";
+        trend = "verschlechtert";
+      } else {
+        emoji = "🟡";
+        trend = "stabil";
+      }
 
       html += `<p><b>${sub.name}</b>: ${emoji} ${trend} (${first.toFixed(1)} → ${last.toFixed(1)})</p>`;
-
     } else {
       html += `<p><b>${sub.name}</b>: ⚪ zu wenig Daten</p>`;
     }
   });
+
+  // Gesamttrend der Halbjahre berechnen
+  html += `
+    <hr>
+    <h4>📊 Verlauf der Halbjahresschnitte:</h4>
+  `;
+  
+  let validSemesters = [];
+  semesterNames.forEach((name, idx) => {
+    if (semesterCounts[idx] > 0) {
+      const avg = semesterSums[idx] / semesterCounts[idx];
+      validSemesters.push({ name, avg });
+      html += `<p><b>${name}:</b> ${avg.toFixed(2)} Punkte</p>`;
+    } else {
+      html += `<p><b>${name}:</b> Keine Daten</p>`;
+    }
+  });
+
+  if (validSemesters.length >= 2) {
+    const firstSem = validSemesters[0];
+    const lastSem = validSemesters[validSemesters.length - 1];
+    const semDiff = lastSem.avg - firstSem.avg;
+    
+    let totalTrend = "";
+    let totalEmoji = "";
+    if (semDiff > 0.3) {
+      totalEmoji = "🚀";
+      totalTrend = "Dein Gesamttrend zeigt nach oben!";
+    } else if (semDiff < -0.3) {
+      totalEmoji = "⚠️";
+      totalTrend = "Dein Gesamttrend sinkt leicht ab.";
+    } else {
+      totalEmoji = "⚖️";
+      totalTrend = "Deine Leistungen bleiben im Gesamtschnitt konstant.";
+    }
+    html += `<p style="margin-top: 15px; font-weight: bold;">${totalEmoji} ${totalTrend} (${firstSem.name} vs. ${lastSem.name})</p>`;
+  }
 
   html += `</div>`;
 
@@ -522,33 +695,148 @@ function analyseStreichfaecher() {
   document.getElementById("result").innerHTML = html;
 }
 
-// Puffer
+// Puffer unter Verwendung des realen (gewichteten) Schnitts
 function analysePuffer() {
-
   const goal = parseFloat(localStorage.getItem("goal")) || 10;
 
-  const values = getAllNotes();
-const avg = values.length ? values.reduce((a,b)=>a+b,0) / values.length : 0;
+  // Hier wird jetzt der reale, LK-gewichtete Schnitt abgerufen
+  const weightedAvg = getWeightedAverage();
+  
+  // Falls noch überhaupt keine Noten eingetragen sind
+  if (weightedAvg === null) {
+    document.getElementById("result").innerHTML = `
+      <div class="analysis">
+        <h3>🎯 Ziel-Puffer Analyse</h3>
+        <hr>
+        <p>Noch keine Noten eingetragen, um einen Puffer zu berechnen.</p>
+      </div>
+    `;
+    return;
+  }
 
-  const diff = avg - goal;
-
+  const diff = weightedAvg - goal;
   let status = "";
 
   if (diff >= 1) status = "🟢 guter Puffer";
   else if (diff >= 0) status = "🟡 knapp über Ziel";
-  else if (diff >= -1) status = "🟠 knapp drunter";
+  else if (diff >= -1) status = "🟠 knapp drunter"; // Entspricht deiner CSS-Klasse oder Logik, falls du Textfarben nutzt
   else status = "🔴 kritisch unter Ziel";
 
   let html = `
     <div class="analysis">
-      <h3>🎯 Ziel-Puffer Analyse</h3>
+      <h3>🎯 Ziel-Puffer Analyse (Realer Schnitt)</h3>
       <hr>
 
-      <p><b>Aktueller Schnitt:</b> ${avg.toFixed(2)}</p>
-      <p><b>Ziel:</b> ${goal}</p>
-      <p><b>Differenz:</b> ${diff.toFixed(2)}</p>
+      <p><b>Realer Schnitt (LKs ×2):</b> ${weightedAvg.toFixed(2)}</p>
+      <p><b>Dein Ziel:</b> ${goal.toFixed(1)} Punkte</p>
+      <p><b>Differenz:</b> ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}</p>
       <p><b>Status:</b> ${status}</p>
+      
+      <p style="font-size:0.85em; opacity:0.7; margin-top: 15px;">
+        ℹ️ Diese Analyse basiert jetzt auf deinem realen Abitur-Schnitt, bei dem Leistungskurse bereits doppelt zählen.
+      </p>
+    </div>
+  `;
 
+  document.getElementById("result").innerHTML = html;
+}
+
+// Abi-Prognose mit LK-Gewichtung 
+function analyseAbiPrognose() {
+
+  let weightedSum = 0;
+  let weightedCount = 0;
+
+  let subjectDetails = [];
+
+  subjects.forEach((sub, i) => {
+    const isLK = sub.name.includes("(LK)");
+    const gewicht = isLK ? 2 : 1;
+
+    let subjectSum = 0;
+    let subjectCount = 0;
+
+    for (let h = 1; h <= 4; h++) {
+      const k = parseFloat(document.getElementById(`k${i}_${h}`).value);
+
+      let sonstArr = [];
+      for (let s = 1; s <= 5; s++) {
+        let val = parseFloat(document.getElementById(`s${i}_${h}_${s}`).value);
+        if (!isNaN(val)) sonstArr.push(val);
+      }
+
+      const note = calcNote(k, sonstArr);
+
+      if (note !== null) {
+        subjectSum += note;
+        subjectCount++;
+
+        weightedSum += note * gewicht;
+        weightedCount += gewicht;
+      }
+    }
+
+    if (subjectCount > 0) {
+      subjectDetails.push({
+        name: sub.name,
+        avg: subjectSum / subjectCount,
+        isLK: isLK
+      });
+    }
+  });
+
+  if (weightedCount === 0) {
+    document.getElementById("result").innerHTML = `
+      <div class="analysis">
+        <h3>🎓 Abi-Prognose</h3>
+        <p>Noch keine Noten eingetragen.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const avgPoints = weightedSum / weightedCount;
+  const block1 = (avgPoints / 15) * 600;
+
+  let block1Status = "";
+  if (block1 < 200) block1Status = "🔴 unter Mindestqualifikation (200 nötig)";
+  else if (block1 < 300) block1Status = "🟠 knapp über Minimum";
+  else if (block1 < 450) block1Status = "🟡 solide";
+  else block1Status = "🟢 stark";
+
+  const geschaetzteBlock2 = (avgPoints / 15) * 300;
+  const geschaetzteGesamt = block1 + geschaetzteBlock2;
+
+  // Punkte (0-15) in Schulnote (1-6) umrechnen, linear angenähert
+  function punkteZuNote(p) {
+    return (6 - p / 3).toFixed(1);
+  }
+
+  const noteAktuell = punkteZuNote(avgPoints);
+
+  let html = `
+    <div class="analysis">
+      <h3>🎓 Abi-Prognose (Block 1)</h3>
+      <p style="font-size:0.9em; opacity:0.7;">Basiert auf dem Thüringer Modell (LKs zählen doppelt, max. 600 Punkte in Block 1). In anderen Bundesländern können Gewichtung und Punktegrenzen abweichen.</p>
+      <p style="font-size:0.9em; opacity:0.8;">📌 Hochrechnung: Es wird angenommen, dass dein bisheriger Punkteschnitt in <b>allen</b> noch fehlenden Halbjahresleistungen ebenso erreicht wird. Das ist <u>nicht</u> dein aktueller Punktestand, sondern eine Prognose bei gleichbleibender Leistung.</p>
+      <hr>
+      <p><b>Punkteschnitt bisher (gewichtet):</b> ${avgPoints.toFixed(2)} / 15 (entspricht Note ${noteAktuell})</p>
+      <p><b>Hochgerechnete Block 1 Punkte:</b> ${block1.toFixed(0)} / 600 → ${block1Status}</p>
+      <hr>
+      <p><b>Gewichtung pro Fach:</b></p>
+  `;
+
+  subjectDetails.forEach(s => {
+    html += `<p>${s.name}${s.isLK ? " 🔥 (×2)" : ""}: ${s.avg.toFixed(2)} (Note ${punkteZuNote(s.avg)})</p>`;
+  });
+
+  html += `
+      <hr>
+      <p><b>📌 Grobe Gesamtschätzung:</b></p>
+      <p>Angenommen, auch die Prüfungsleistungen (Block 2) liegen auf demselben Niveau:</p>
+      <p>Geschätzte Gesamtpunktzahl: ca. ${geschaetzteGesamt.toFixed(0)} / 900</p>
+      <p><b>Erwarteter Gesamt-Notendurchschnitt: ca. ${noteAktuell}</b></p>
+      <p style="font-size:0.9em; opacity:0.7;">⚠️ Nur eine grobe, unverbindliche Orientierung – kein offizielles Ergebnis. Zulassungsregeln, Streichfächer-Vorgaben und tatsächliche Prüfungsleistung sind nicht vollständig abgebildet. Nutzer aus anderen Bundesländern sollten sich zusätzlich über die dort geltenden Regeln informieren.</p>
     </div>
   `;
 
@@ -635,11 +923,16 @@ function saveData() {
 
   localStorage.setItem("grades", JSON.stringify(data));
 
-  // dein bestehender UI-Text bleibt
   const values = getAllNotes();
   const avg = values.length
     ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
     : "-";
+
+  const weightedAvg = getWeightedAverage();
+  const weightedText = weightedAvg !== null
+    ? `<p><b>🎓 Realer Schnitt (LKs ×2):</b> ${weightedAvg.toFixed(2)}</p>
+       <p style="font-size:0.85em; opacity:0.7;">ℹ️ Der reale Schnitt gewichtet LKs doppelt, wie im echten Abitur. Der Schnitt oben zählt alle Fächer gleich.</p>`
+    : "";
 
   document.getElementById("result").innerHTML = `
     <div class="analysis">
@@ -647,6 +940,7 @@ function saveData() {
       <hr>
       <p>✅ Alle Noten wurden gespeichert.</p>
       <p><b>📊 Schnitt:</b> ${avg}</p>
+      ${weightedText}
     </div>
   `;
 }
