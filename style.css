@@ -1,30 +1,39 @@
-/* Google Font für den modernen Tech-Look importieren */
+/* Minimalistisches, modernes Design - Einfarbig & Ruhig */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Einfarbiger, dunkler Hintergrund (Tiefes, fast schwarzes Blau) */
-  --bg-dark: #020617;       
+  /* Einfarbiger, tiefer Hintergrund */
+  --bg-page: #0b0f19;
+  --bg-card: #131a2a; 
+  --bg-input: #090d16;
+  --primary: #3b82f6;           /* Strahlendes Blau */
+  --primary-hover: #2563eb;
+  --text-main: #ffffff;         /* Klares Weiß */
+  --text-muted: #e2e8f0;        /* Helles Weiß-Grau */
+  --border-color: rgba(255, 255, 255, 0.12);
 
-  /* Behalte deine restlichen Variablen für Fächer & Buttons bei */
-  --bg-card: rgba(21, 31, 50, 0.7); /* Leicht transparent für Glass-Effekt */
-  --bg-input: #0f172a;
-  --primary: #38bdf8;
-  --primary-hover: #0ea5e9;
-  --text-main: #f8fafc;
-  --text-muted: #ffffff;
-  --border-color: rgba(255, 255, 255, 0.08);
+  --red: #ef4444;               /* Kräftiges Rot */
+  --yellow: #f59e0b;            /* Kräftiges Gelb */
+  --green: #10b981;             /* Kräftiges Grün */
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
-  background-color: var(--bg-dark);
   padding: 30px 20px;
   margin: 0;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  
+  /* Reiner, einfarbiger Hintergrund */
+  background: var(--bg-page);
   min-height: 100vh;
-  overflow-x: hidden;
+}
+
+/* Hintergrund-Lichtpunkte komplett entfernt für einfarbigen Look */
+body::before,
+body::after {
+  display: none;
 }
 
 h1 {
@@ -34,6 +43,8 @@ h1 {
   margin-bottom: 30px;
   display: inline-block;
   width: 100%;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
 }
 
 h2 {
@@ -41,13 +52,14 @@ h2 {
   font-weight: 600;
   text-align: center;
   margin-top: 40px;
-  color: #f1f5f9;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 /* Fächer-Grid */
 #subjects {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 20px;
   max-width: 1200px;
   margin: 0 auto 40px auto;
@@ -59,86 +71,135 @@ h2 {
   border-radius: 16px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .subject:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 26px rgba(56, 189, 248, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .subject h3 {
   margin: 0 0 15px 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #f1f5f9;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding-bottom: 8px;
+  letter-spacing: -0.01em;
 }
 
-/* =========================================================
-   IPAD-FIX: FLEXBOX FÜR DIE ZEILENELEMENTE
-========================================================= */
+/* Halbjahr-Zeile */
 .halfyear {
-  display: flex;
+  display: grid;
+  grid-template-columns: 50px 70px 1fr 60px;
   align-items: center;
-  justify-content: space-between; /* Verteilt Inhalt sauber von links nach rechts */
   gap: 10px;
   margin: 8px 0;
   border-radius: 10px;
-  padding: 6px 12px;
+  padding: 6px 10px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 
-/* Halbjahr-Beschriftung (z.B. "Q1") bleibt links und stabil */
-.halfyear > span:first-child,
-.halfyear > label:first-child {
-  min-width: 45px;
-  flex-shrink: 0;
+.halfyear span {
+  color: var(--text-main);
 }
 
-/* Noten-Container (hält Klausur + Sonstige kompakt zusammen) */
-.sonstige {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-grow: 1;
-  justify-content: center; /* Zentriert die Notenfelder im mittleren Bereich */
+/* =========================================================
+   GRADES (Kräftige, klare Farben)
+========================================================= */
+
+/* RED */
+.r1 { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25); }
+.r2 { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.35); }
+.r3 { background: rgba(239, 68, 68, 0.24); border-color: rgba(239, 68, 68, 0.45); }
+.r4 { background: rgba(239, 68, 68, 0.30); border-color: rgba(239, 68, 68, 0.55); }
+.r5 { background: rgba(239, 68, 68, 0.35); border-color: rgba(239, 68, 68, 0.65); }
+
+/* YELLOW */
+.y1 { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
+.y2 { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.35); }
+.y3 { background: rgba(245, 158, 11, 0.24); border-color: rgba(245, 158, 11, 0.45); }
+.y4 { background: rgba(245, 158, 11, 0.30); border-color: rgba(245, 158, 11, 0.55); }
+.y5 { background: rgba(245, 158, 11, 0.35); border-color: rgba(245, 158, 11, 0.65); }
+
+/* GREEN */
+.g1 { background: rgba(16, 174, 61, 0.1); border-color: rgba(16, 185, 129, 0.25); }
+.g2 { background: rgba(16, 174, 61, 0.2); border-color: rgba(16, 185, 129, 0.35); }
+.g3 { background: rgba(16, 174, 61, 0.3); border-color: rgba(16, 185, 129, 0.45); }
+.g4 { background: rgba(16, 174, 61, 0.4); border-color: rgba(16, 185, 129, 0.55); }
+
+/* =========================================================
+   🔥 BEST GRADE (15 NP / g5) - KONTROLLIERTES LEUCHTEN
+========================================================= */
+
+.g5 {
+  /* Deckkraft im Hintergrund leicht reduziert für weniger "Glow-Druck" */
+  background:
+    radial-gradient(circle at 30% 20%, rgba(0, 255, 153, 0.2), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.15), transparent 55%),
+    linear-gradient(
+      135deg,
+      rgba(34, 197, 94, 0.4),
+      rgba(0, 255, 153, 0.15)
+    );
+
+  /* Rahmen bleibt scharf und präsent fürs Herausstechen */
+  border-color: rgba(0, 255, 153, 0.8);
+
+  /* Schattenradien deutlich verkleinert (kein raumfüllendes Überstrahlen mehr) */
+  box-shadow:
+    0 0 10px rgba(0, 255, 153, 0.3),
+    0 0 20px rgba(0, 240, 255, 0.15);
+
+  position: relative;
+  animation: g5Pulse 2.5s ease-in-out infinite;
 }
 
-/* Der Durchschnitt sitzt nun rechts nah an den Noten, ohne wegzurutschen */
+/* Dezentere Puls-Animation ohne extreme Ausreißer */
+@keyframes g5Pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 8px rgba(0, 255, 153, 0.25),
+      0 0 15px rgba(0, 240, 255, 0.1);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow:
+      0 0 14px rgba(0, 255, 153, 0.4),
+      0 0 25px rgba(0, 240, 255, 0.2);
+    transform: scale(1.01);
+  }
+}
+
 .avg {
   font-size: 0.85rem;
   font-weight: 600;
   text-align: right;
-  color: #ffffff;
-  min-width: 65px;
-  flex-shrink: 0;
-  white-space: nowrap;
+  color: var(--text-main);
 }
 
-/* Eingabefelder exakt und iPad-sicher dimensionieren */
+/* Eingabefelder */
 input {
-  width: 38px !important; /* Erzwingt feste, schmale Breite */
-  max-width: 38px;
-  padding: 6px 0;
+  width: 46px;
+  padding: 6px;
   border-radius: 8px;
-  border: 1px solid #334155;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   background: var(--bg-input);
-  color: white;
+  color: #ffffff;
   text-align: center;
   font-family: inherit;
-  font-weight: 500;
+  font-weight: 600;
   outline: none;
   transition: all 0.2s;
-  box-sizing: border-box;
 }
 
 input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-  background: #020617;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  background: #131a2a;
 }
 
 input::-webkit-outer-spin-button,
@@ -149,40 +210,11 @@ input::-webkit-inner-spin-button {
 
 .klausur {
   border: 2px solid var(--primary);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
 }
 
-/* =========================================================
-   GRADES & CYBER LEGEND MODE (Unverändert)
-========================================================= */
-.r1 { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); }
-.r2 { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.3); }
-.r3 { background: rgba(239, 68, 68, 0.32); border-color: rgba(239, 68, 68, 0.4); }
-.r4 { background: rgba(239, 68, 68, 0.45); border-color: rgba(239, 68, 68, 0.5); }
-.r5 { background: rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.7); }
-
-.y1 { background: rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.15); }
-.y2 { background: rgba(250, 204, 21, 0.25); border-color: rgba(250, 204, 21, 0.25); }
-.y3 { background: rgba(250, 204, 21, 0.32); border-color: rgba(250, 204, 21, 0.35); }
-.y4 { background: rgba(250, 204, 21, 0.45); border-color: rgba(250, 204, 21, 0.45); }
-.y5 { background: rgba(250, 204, 21, 0.5); border-color: rgba(250, 204, 21, 0.6); }
-
-.g1 { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.15); }
-.g2 { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.25); }
-.g3 { background: rgba(34, 197, 94, 0.32); border-color: rgba(34, 197, 94, 0.35); }
-.g4 { background: rgba(34, 197, 94, 0.45); border-color: rgba(34, 197, 94, 0.45); }
-
-.g5 {
-  background: radial-gradient(circle at 30% 20%, rgba(0, 255, 153, 0.35), transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.25), transparent 55%), linear-gradient(135deg, rgba(34, 197, 94, 0.55), rgba(0, 255, 153, 0.25));
-  border-color: rgba(0, 255, 153, 0.85);
-  box-shadow: 0 0 15px rgba(0, 255, 153, 0.35), 0 0 35px rgba(0, 255, 153, 0.25), 0 0 80px rgba(0, 240, 255, 0.15);
-  position: relative;
-  animation: g5Pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes g5Pulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(0, 255, 153, 0.25), 0 0 30px rgba(0, 255, 153, 0.18), 0 0 70px rgba(0, 240, 255, 0.12); transform: scale(1); }
-  50% { box-shadow: 0 0 20px rgba(0, 255, 153, 0.45), 0 0 50px rgba(0, 255, 153, 0.25), 0 0 110px rgba(0, 240, 255, 0.18); transform: scale(1.01); }
+.sonstige {
+  display: flex;
+  gap: 6px;
 }
 
 /* Buttons & Layout-Gruppen */
@@ -200,107 +232,114 @@ input::-webkit-inner-spin-button {
   width: 100%;
 }
 
-.button-group.primary { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-.button-group.analysis-group { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.button-group.primary {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
 
-/* ULTRA CYBERPUNK BUTTONS */
+.button-group.analysis-group {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* =========================================================
+   BUTTONS (Modern, klar strukturiert)
+========================================================= */
+
 button {
   position: relative;
   overflow: hidden;
   padding: 14px 22px;
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.92rem;
   font-family: inherit;
-  font-weight: 700;
-  letter-spacing: 0.6px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
-  backdrop-filter: blur(12px);
-  text-transform: uppercase;
+  transition: all 0.2s ease;
 }
 
-button::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, #00f0ff, #ff00c8, #7c3aed, #00f0ff);
-  background-size: 300% 300%;
-  opacity: 0;
-  z-index: -2;
-  transition: opacity 0.3s ease;
-  animation: neonBorder 5s linear infinite;
-}
-
+button::before,
 button::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-  z-index: -1;
+  display: none;
 }
 
-button:hover::before { opacity: 1; }
-button:hover { transform: translateY(-4px) scale(1.02); }
-button:active { transform: scale(0.96); }
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
 
+button:active {
+  transform: scale(0.98);
+}
+
+/* PRIMARY BUTTONS */
 .button-group.primary button {
-  background: linear-gradient(135deg, rgba(0,240,255,0.18), rgba(37,99,255,0.14));
+  background: var(--primary);
   color: #ffffff;
-  border-color: rgba(0,240,255,0.35);
-  box-shadow: 0 0 12px rgba(0,240,255,0.15), 0 0 30px rgba(0,240,255,0.08);
-  text-shadow: 0 0 10px rgba(255,255,255,0.35);
+  border-color: transparent;
 }
 
 .button-group.primary button:hover {
-  background: linear-gradient(135deg, rgba(0,240,255,0.28), rgba(37,99,255,0.22));
-  border-color: rgba(0,240,255,0.8);
-  box-shadow: 0 0 20px rgba(0,240,255,0.4), 0 0 50px rgba(0,240,255,0.2), 0 0 100px rgba(0,240,255,0.12);
+  background: var(--primary-hover);
 }
 
+/* ANALYSIS BUTTONS */
 .button-group.analysis-group button {
-  background: linear-gradient(135deg, rgba(255,0,200,0.10), rgba(124,58,237,0.10));
-  color: #f8fafc;
-  border-color: rgba(255,0,200,0.16);
-  box-shadow: 0 0 12px rgba(255,0,200,0.08);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .button-group.analysis-group button:hover {
-  background: linear-gradient(135deg, rgba(255,0,200,0.20), rgba(124,58,237,0.20));
-  border-color: rgba(255,0,200,0.6);
-  box-shadow: 0 0 18px rgba(255,0,200,0.28), 0 0 45px rgba(124,58,237,0.18);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-button span { position: relative; z-index: 2; }
+/* SHINE EFFECT */
+button span {
+  position: relative;
+  z-index: 2;
+}
+
 button .shine {
   position: absolute;
   top: 0;
   left: -120%;
   width: 60%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
   transform: skewX(-25deg);
-  transition: 0.7s;
+  transition: 0.6s;
 }
 
-button:hover .shine { left: 140%; }
-button:hover i, button:hover svg { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
-
-@keyframes neonBorder {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
+button:hover .shine {
+  left: 140%;
 }
 
-.good { color: #4ade80; font-weight: 600; }
-.medium { color: #facc15; font-weight: 600; }
-.bad { color: #f87171; font-weight: 600; }
+button i,
+button svg {
+  transition: transform 0.2s ease;
+}
 
+button:hover i,
+button:hover svg {
+  transform: scale(1.05);
+}
+
+/* Bewertungen */
+.good { color: var(--green); font-weight: 700; }
+.medium { color: var(--yellow); font-weight: 700; }
+.bad { color: var(--red); font-weight: 700; }
+
+/* Analyse Boxen */
 .analysis {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -308,85 +347,132 @@ button:hover i, button:hover svg { transform: scale(1.15); filter: drop-shadow(0
   margin: 20px auto;
   border-radius: 16px;
   max-width: 900px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 
-.analysis h3 { margin-top: 0; font-size: 1.1rem; color: #f1f5f9; }
-.analysis p { margin: 8px 0; color: #cbd5e1; }
-#result { display: flex; justify-content: center; font-size: 1.2rem; font-weight: 500; }
+.analysis h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #ffffff;
+}
 
-/* Modals */
+.analysis p {
+  margin: 8px 0;
+  color: #ffffff;
+}
+
+#result {
+  display: flex;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Popups (Modals) */
 .modal {
   display: none;
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(4, 7, 12, 0.8);
-  backdrop-filter: blur(8px);
-  justify-content: center; align-items: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
   z-index: 999;
   animation: fadeIn 0.2s ease;
 }
 
-.modal.show { display: flex; }
+.modal.show {
+  display: flex;
+}
+
 .modal-content {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 30px; width: 460px; max-width: 90%;
-  border-radius: 20px; color: #f1f5f9;
+  background: #161f30;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 30px;
+  width: 460px;
+  max-width: 90%;
+  border-radius: 20px;
+  color: #ffffff;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-.modal-content h2 { text-align: left; margin-top: 0; font-size: 1.4rem; }
-.modal-content p { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; }
+.modal-content h2 {
+  text-align: left;
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.modal-content p {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
 
 textarea#subjectsInput {
   background: var(--bg-input);
-  border: 1px solid #334155;
-  color: white; border-radius: 10px; padding: 12px;
-  font-family: inherit; font-size: 0.95rem;
-  outline: none; resize: vertical; margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
 }
 
-textarea#subjectsInput:focus { border-color: var(--primary); }
-.modal-content button { width: 100%; margin-top: 10px; }
-.modal-content button:last-child { background: transparent; color: #94a3b8; border: 1px solid #334155; }
-.modal-content button:last-child:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+textarea#subjectsInput:focus {
+  border-color: var(--primary);
+}
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* Modal Buttons */
+.modal-content button {
+  width: 100%;
+  margin-top: 10px;
+}
 
-/* =========================================================
-   RESPONSIVE DESIGN (Für iPad optimiert)
-========================================================= */
-@media (max-width: 1024px) {
+.modal-content button:last-child {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-content button:last-child:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* RESPONSIVE DESIGN */
+
+/* TABLET */
+@media (max-width: 900px) {
   body { padding: 20px 15px; }
-  
-  #subjects { 
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); 
-    gap: 15px;
-  }
-  
+  #subjects { grid-template-columns: 1fr; }
   .button-group.primary,
   .button-group.analysis-group {
     grid-template-columns: 1fr 1fr;
   }
 }
 
+/* HANDY */
 @media (max-width: 600px) {
   h1 { font-size: 1.8rem; }
-  #subjects { grid-template-columns: 1fr; }
-  
   .halfyear {
-    padding: 6px 8px;
+    grid-template-columns: 45px 65px 1fr 55px;
     gap: 6px;
+    font-size: 0.9rem;
   }
-  
-  .halfyear > span:first-child { min-width: 35px; }
-  
-  input { 
-    width: 34px !important; 
-    font-size: 0.85rem; 
-  }
-  
+  input { width: 40px; padding: 4px; }
   .button-group.primary,
   .button-group.analysis-group {
     grid-template-columns: 1fr;
