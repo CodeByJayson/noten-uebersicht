@@ -17,6 +17,10 @@
   --green: #10b981;             /* Kräftiges Grün */
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
@@ -28,19 +32,14 @@ body {
   /* Reiner, einfarbiger Hintergrund */
   background: var(--bg-page);
   min-height: 100vh;
-}
-
-/* Hintergrund-Lichtpunkte komplett entfernt für einfarbigen Look */
-body::before,
-body::after {
-  display: none;
+  overflow-x: hidden;
 }
 
 h1 {
   font-size: 2.2rem;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   display: inline-block;
   width: 100%;
   letter-spacing: -0.02em;
@@ -54,6 +53,32 @@ h2 {
   margin-top: 40px;
   color: var(--text-main);
   letter-spacing: -0.01em;
+}
+
+/* =========================================================
+   BACKUP-REMINDER BANNER
+========================================================= */
+
+#backupBanner {
+  display: none;
+  max-width: 900px;
+  margin: 0 auto 24px auto;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #ffffff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+}
+
+#backupBanner button {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 /* Fächer-Grid */
@@ -89,22 +114,25 @@ h2 {
   letter-spacing: -0.01em;
 }
 
-/* Halbjahr-Zeile */
+/* Halbjahr-Zeile (nutzt grid-area, damit die mobile Anordnung
+   unten sauber umsortiert werden kann, ohne das HTML zu ändern) */
 .halfyear {
   display: grid;
   grid-template-columns: 50px 70px 1fr 60px;
+  grid-template-areas: "label klausur sonstige avg";
   align-items: center;
   gap: 10px;
   margin: 8px 0;
   border-radius: 10px;
-  padding: 6px 10px;
+  padding: 8px 10px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 
-.halfyear span {
-  color: var(--text-main);
-}
+.halfyear span     { grid-area: label; color: var(--text-main); }
+.halfyear .klausur  { grid-area: klausur; }
+.halfyear .sonstige { grid-area: sonstige; }
+.halfyear .avg      { grid-area: avg; }
 
 /* =========================================================
    GRADES (Kräftige, klare Farben)
@@ -135,7 +163,6 @@ h2 {
 ========================================================= */
 
 .g5 {
-  /* Deckkraft im Hintergrund leicht reduziert für weniger "Glow-Druck" */
   background:
     radial-gradient(circle at 30% 20%, rgba(0, 255, 153, 0.2), transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.15), transparent 55%),
@@ -145,10 +172,8 @@ h2 {
       rgba(0, 255, 153, 0.15)
     );
 
-  /* Rahmen bleibt scharf und präsent fürs Herausstechen */
   border-color: rgba(0, 255, 153, 0.8);
 
-  /* Schattenradien deutlich verkleinert (kein raumfüllendes Überstrahlen mehr) */
   box-shadow:
     0 0 10px rgba(0, 255, 153, 0.3),
     0 0 20px rgba(0, 240, 255, 0.15);
@@ -157,7 +182,6 @@ h2 {
   animation: g5Pulse 2.5s ease-in-out infinite;
 }
 
-/* Dezentere Puls-Animation ohne extreme Ausreißer */
 @keyframes g5Pulse {
   0%, 100% {
     box-shadow:
@@ -215,6 +239,7 @@ input::-webkit-inner-spin-button {
 .sonstige {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 /* Buttons & Layout-Gruppen */
@@ -233,6 +258,10 @@ input::-webkit-inner-spin-button {
 }
 
 .button-group.primary {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.button-group.backup-group {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
@@ -298,30 +327,43 @@ button:active {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* SHINE EFFECT */
-button span {
-  position: relative;
-  z-index: 2;
+/* BACKUP BUTTONS + FILE-INPUT-LABEL (verhält sich wie ein Button) */
+.button-group.backup-group button {
+  background: rgba(16, 185, 129, 0.12);
+  color: #ffffff;
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
-button .shine {
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.15),
-    transparent
-  );
-  transform: skewX(-25deg);
-  transition: 0.6s;
+.button-group.backup-group button:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
 }
 
-button:hover .shine {
-  left: 140%;
+.file-input-label {
+  padding: 14px 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 0.92rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.file-input-label:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
+}
+
+.file-input-label input[type="file"] {
+  display: none;
 }
 
 button i,
@@ -356,9 +398,21 @@ button:hover svg {
   color: #ffffff;
 }
 
+.analysis h4 {
+  color: #ffffff;
+}
+
 .analysis p {
   margin: 8px 0;
   color: #ffffff;
+}
+
+.analysis pre {
+  overflow-x: auto;
+}
+
+#historyChart {
+  max-width: 100%;
 }
 
 #result {
@@ -366,6 +420,7 @@ button:hover svg {
   justify-content: center;
   font-size: 1.2rem;
   font-weight: 600;
+  text-align: center;
 }
 
 /* Popups (Modals) */
@@ -382,6 +437,7 @@ button:hover svg {
   align-items: center;
   z-index: 999;
   animation: fadeIn 0.2s ease;
+  padding: 20px;
 }
 
 .modal.show {
@@ -394,6 +450,8 @@ button:hover svg {
   padding: 30px;
   width: 460px;
   max-width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
   border-radius: 20px;
   color: #ffffff;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -452,29 +510,69 @@ textarea#subjectsInput:focus {
   to { opacity: 1; }
 }
 
-/* RESPONSIVE DESIGN */
+/* =========================================================
+   RESPONSIVE DESIGN
+========================================================= */
 
 /* TABLET */
 @media (max-width: 900px) {
-  body { padding: 20px 15px; }
+  body { padding: 20px 14px; }
+
   #subjects { grid-template-columns: 1fr; }
+
   .button-group.primary,
+  .button-group.backup-group,
   .button-group.analysis-group {
     grid-template-columns: 1fr 1fr;
+  }
+
+  #backupBanner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .halfyear {
+    grid-template-columns: 48px 65px 1fr 55px;
   }
 }
 
 /* HANDY */
 @media (max-width: 600px) {
-  h1 { font-size: 1.8rem; }
+  h1 { font-size: 1.7rem; }
+
+  .subject { padding: 14px; }
+
   .halfyear {
-    grid-template-columns: 45px 65px 1fr 55px;
-    gap: 6px;
-    font-size: 0.9rem;
+    grid-template-columns: 34px 46px 1fr;
+    grid-template-areas:
+      "label klausur avg"
+      "sonstige sonstige sonstige";
+    row-gap: 8px;
+    column-gap: 6px;
+    font-size: 0.85rem;
+    padding: 8px 6px;
   }
-  input { width: 40px; padding: 4px; }
+
+  .halfyear .sonstige {
+    justify-content: flex-start;
+  }
+
+  input { width: 38px; padding: 5px; font-size: 0.85rem; }
+
   .button-group.primary,
+  .button-group.backup-group,
   .button-group.analysis-group {
     grid-template-columns: 1fr;
   }
+
+  button, .file-input-label {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+
+  .analysis { padding: 14px; }
+  .analysis pre { font-size: 0.8rem; }
+
+  .modal-content { padding: 20px; }
 }
