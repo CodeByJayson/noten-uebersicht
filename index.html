@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Noten Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -9,27 +10,41 @@
 
 <h1>📊 Notenübersicht</h1>
 
+<div id="backupBanner">
+  <span></span>
+  <button onclick="exportBackup()">Jetzt Backup erstellen</button>
+</div>
+
 <div id="subjects"></div>
 
 <div class="button-wrapper">
 
   <div class="button-group primary">
-  <button onclick="saveData()">💾 Speichern</button>
-  <button onclick="setGoal()">🎯 Ziel setzen</button>
-  <button onclick="openSettings()">⚙️ Fächer</button>
-  <button onclick="openWarning()">⚠️ Hinweis</button>
-</div>
+    <button onclick="saveData()">💾 Speichern</button>
+    <button onclick="setGoal()">🎯 Ziel setzen</button>
+    <button onclick="openSettings()">⚙️ Fächer</button>
+    <button onclick="openWarning()">⚠️ Hinweis</button>
+  </div>
 
-<div class="button-group analysis-group">
-  <button onclick="analyseWeakness()">📉 Schwächen</button>
-  <button onclick="analysePriority()">🚦 Priorität</button>
-  <button onclick="showOverview()">📋 Übersicht</button>
-  <button onclick="analyseNeededPerSubject()">🧭 Ziel pro Fach</button>
-  <button onclick="analyseTrend()">📈 Trend</button>
-  <button onclick="analyseStreichfaecher()">🧹 Streich-Fächer</button>
-  <button onclick="analysePuffer()">🛡️ Puffer</button>
-  <button onclick="analyseAbiPrognose()">🎓 Abi-Prognose</button>
-</div>
+  <div class="button-group backup-group">
+    <button onclick="exportBackup()">📤 Backup erstellen</button>
+    <label class="file-input-label">
+      📥 Backup importieren
+      <input type="file" accept="application/json" onchange="importBackup(event)">
+    </label>
+  </div>
+
+  <div class="button-group analysis-group">
+    <button onclick="analyseWeakness()">📉 Schwächen</button>
+    <button onclick="analysePriority()">🚦 Priorität</button>
+    <button onclick="showOverview()">📋 Übersicht</button>
+    <button onclick="analyseNeededPerSubject()">🧭 Ziel pro Fach</button>
+    <button onclick="analyseTrend()">📈 Trend</button>
+    <button onclick="analyseStreichfaecher()">🧹 Streich-Fächer</button>
+    <button onclick="analysePuffer()">🛡️ Puffer</button>
+    <button onclick="analyseAbiPrognose()">🎓 Abi-Prognose</button>
+    <button onclick="analyseHistory()">📊 Verlauf</button>
+  </div>
 
 </div>
 
@@ -57,6 +72,8 @@
 
       • ⛔ Wenn du Browserdaten löschst oder im privaten Modus bist, gehen alle Noten verloren.<br><br>
 
+      • <b>Deshalb: Mache mindestens einmal im Monat ein Backup</b> über den Button "📤 Backup erstellen". Der Banner oben erinnert dich automatisch daran, sobald es fällig ist.<br><br>
+
       • Die Seite funktioniert nur auf diesem Gerät und wird nicht synchronisiert.<br><br>
 
       • Alle Berechnungen dienen nur zur Orientierung und sind ohne Gewähr.<br><br>
@@ -67,7 +84,7 @@
 
       <b>Achtung:</b><br>
   Wenn du deine Fächer änderst, können bereits eingetragene Noten
-  nicht mehr korrekt zugeordnet werden und erscheinen möglicherweise als „verloren“.<br><br>
+  nicht mehr korrekt zugeordnet werden und erscheinen möglicherweise als „verloren".<br><br>
 
   👉 Empfehlung: Fächer am Anfang festlegen und danach nicht mehr ändern.
     </p>
@@ -79,6 +96,7 @@
 <h2>Gesamtbewertung</h2>
 <p id="result"></p>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="script.js"></script>
 </body>
 </html>
