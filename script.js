@@ -843,6 +843,199 @@ function analyseAbiPrognose() {
   document.getElementById("result").innerHTML = html;
 }
 
+// ===== Verlaufs-Historie (für die Statistik) =====
+function recordHistory() {
+  const values = getAllNotes();
+  const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+  const weighted = getWeightedAverage();
+
+  if (avg === null && weighted === null) return;
+
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  const dateKey = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  const entry = {
+    date: dateKey,
+    avg: avg !== null ? parseFloat(avg.toFixed(2)) : null,
+    weighted: weighted !== null ? parseFloat(weighted.toFixed(2)) : null
+  };
+
+  const existingIndex = history.findIndex(h => h.date === dateKey);
+  if (existingIndex >= 0) {
+    history[existingIndex] = entry; // heutigen Eintrag aktualisieren statt duplizieren
+  } else {
+    history.push(entry);
+  }
+
+  history.sort((a, b) => new Date(a.date) - new Date(b.date));
+  localStorage.setItem("history", JSON.stringify(history));
+}
+
+// Statistik-Ansicht: Notendurchschnitt im Verlauf (Chart.js)
+let historyChartInstance = null;
+
+function analyseHistory() {
+  const history = JSON.parse(localStorage.getItem("history")) || [];
+
+  if (history.length === 0) {
+    document.getElementById("result").innerHTML = `
+      <div class="analysis">
+        <h3>📊 Verlauf</h3>
+        <p>Noch keine Verlaufsdaten. Klicke einmal auf 💾 Speichern, damit hier ein Verlauf entsteht.</p>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById("result").innerHTML = `
+    <div class="analysis">
+      <h3>📊 Notendurchschnitt im Verlauf</h3>
+      <p style="font-size:0.85em; opacity:0.7;">Ein Punkt entsteht jedes Mal, wenn du auf "Speichern" klickst (maximal einer pro Tag).</p>
+      <hr>
+      <canvas id="historyChart" height="260"></canvas>
+    </div>
+  `;
+
+  const ctx = document.getElementById("historyChart").getContext("2d");
+  if (historyChartInstance) historyChartInstance.destroy();
+
+  historyChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: history.map(h => h.date),
+      datasets: [
+        {
+          label: "Einfacher Schnitt",
+          data: history.map(h => h.avg),
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59,130,246,0.15)",
+          tension: 0.25,
+          spanGaps: true
+        },
+        {
+          label: "Realer Schnitt (LKs ×2)",
+          data: history.map(h => h.weighted),
+          borderColor: "#10b981",
+          backgroundColor: "rgba(16,185,129,0.15)",
+          tension: 0.25,
+          spanGaps: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          min: 0,
+          max: 15,
+          ticks: { color: "#e2e8f0" },
+          grid: { color: "rgba(255,255,255,0.08)" }
+        },
+        x: {
+          ticks: { color: "#e2e8f0" },
+          grid: { color: "rgba(255,255,255,0.05)" }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: "#ffffff" } }
+      }
+    }
+  });
+}
+
+// ===== Backup-System =====
+function exportBackup() {
+  const backup = {
+    subjects: subjects,
+    grades: JSON.parse(localStorage.getItem("grades")) || null,
+    goal: localStorage.getItem("goal") || null,
+    history: JSON.parse(localStorage.getItem("history")) || [],
+    exportedAt: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `notentracker-backup-${new Date().toISOString().split("T")[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  localStorage.setItem("lastBackup", new Date().toISOString());
+  updateBackupBanner();
+
+  document.getElementById("result").innerHTML = `
+    <div class="analysis">
+      <h3>💾 Backup erstellt</h3>
+      <p>✅ Datei wurde heruntergeladen: <b>${a.download}</b></p>
+      <p style="font-size:0.85em; opacity:0.7;">Bewahre die Datei sicher auf (z. B. Cloud-Speicher oder E-Mail an dich selbst) – sie ist deine Rettung, falls der Browser die Noten verliert.</p>
+    </div>
+  `;
+}
+
+function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const backup = JSON.parse(e.target.result);
+
+      if (!confirm("⚠️ Dies überschreibt alle aktuellen Noten und Einstellungen mit dem Backup. Fortfahren?")) {
+        return;
+      }
+
+      if (backup.subjects) {
+        subjects = backup.subjects;
+        localStorage.setItem("subjects", JSON.stringify(subjects));
+      }
+      if (backup.grades) localStorage.setItem("grades", JSON.stringify(backup.grades));
+      if (backup.goal) localStorage.setItem("goal", backup.goal);
+      if (backup.history) localStorage.setItem("history", JSON.stringify(backup.history));
+
+      renderSubjects();
+      loadData();
+      calculate();
+
+      localStorage.setItem("lastBackup", new Date().toISOString());
+      updateBackupBanner();
+
+      alert("✅ Backup erfolgreich eingespielt!");
+    } catch (err) {
+      alert("❌ Datei konnte nicht gelesen werden. Ist es eine gültige Backup-Datei?");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ""; // Reset, damit dieselbe Datei erneut wählbar ist
+}
+
+// Reminder-Banner: zeigt sich, wenn das letzte Backup > 30 Tage her ist (oder nie gemacht wurde)
+function updateBackupBanner() {
+  const banner = document.getElementById("backupBanner");
+  if (!banner) return;
+
+  const lastBackup = localStorage.getItem("lastBackup");
+
+  if (!lastBackup) {
+    banner.style.display = "flex";
+    banner.querySelector("span").innerText = "⚠️ Du hast noch nie ein Backup erstellt. Bitte jetzt eines machen, sonst gehen deine Noten bei Datenverlust unwiderruflich verloren!";
+    return;
+  }
+
+  const daysSince = (Date.now() - new Date(lastBackup).getTime()) / (1000 * 60 * 60 * 24);
+
+  if (daysSince >= 30) {
+    banner.style.display = "flex";
+    banner.querySelector("span").innerText = `⚠️ Letztes Backup vor ${Math.floor(daysSince)} Tagen. Zeit für ein neues Backup!`;
+  } else {
+    banner.style.display = "none";
+  }
+}
+
 // Ziel setzen
 function setGoal() {
   const goal = prompt("Welchen Durchschnitt willst du erreichen? (0-15 Punkte)");
@@ -922,6 +1115,7 @@ function saveData() {
   });
 
   localStorage.setItem("grades", JSON.stringify(data));
+  recordHistory(); // Verlauf für die Statistik aufzeichnen
 
   const values = getAllNotes();
   const avg = values.length
@@ -967,3 +1161,4 @@ function loadData() {
 renderSubjects();
 loadData();
 calculate();
+updateBackupBanner();
