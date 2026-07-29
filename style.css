@@ -118,21 +118,37 @@ h2 {
    unten sauber umsortiert werden kann, ohne das HTML zu ändern) */
 .halfyear {
   display: grid;
-  grid-template-columns: 50px 70px 1fr 60px;
+  grid-template-columns: minmax(28px, 42px) minmax(34px, 55px) minmax(0, 1fr) minmax(34px, 55px);
   grid-template-areas: "label klausur sonstige avg";
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   margin: 8px 0;
   border-radius: 10px;
-  padding: 8px 10px;
+  padding: 8px 6px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  width: 100%;
 }
 
-.halfyear span     { grid-area: label; color: var(--text-main); }
-.halfyear .klausur  { grid-area: klausur; }
-.halfyear .sonstige { grid-area: sonstige; }
+.halfyear span     { grid-area: label; color: var(--text-main); font-size: 0.85rem; }
+.halfyear .klausur  { grid-area: klausur; width: 100%; min-width: 0; }
 .halfyear .avg      { grid-area: avg; }
+
+/* Die 5 "Sonstige"-Felder bekommen ihre eigene Gleichspalten-Grid-Zeile,
+   damit sie immer gemeinsam schrumpfen und nie umbrechen */
+.halfyear .sonstige {
+  grid-area: sonstige;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+
+.halfyear .sonstige input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 2px;
+}
 
 /* =========================================================
    GRADES (Kräftige, klare Farben)
@@ -533,7 +549,8 @@ textarea#subjectsInput:focus {
   }
 
   .halfyear {
-    grid-template-columns: 48px 65px 1fr 55px;
+    grid-template-columns: minmax(26px, 36px) minmax(32px, 48px) minmax(0, 1fr) minmax(32px, 48px);
+    gap: 5px;
   }
 }
 
@@ -544,21 +561,23 @@ textarea#subjectsInput:focus {
   .subject { padding: 14px; }
 
   .halfyear {
-    grid-template-columns: 34px 46px 1fr;
-    grid-template-areas:
-      "label klausur avg"
-      "sonstige sonstige sonstige";
-    row-gap: 8px;
-    column-gap: 6px;
-    font-size: 0.85rem;
-    padding: 8px 6px;
+    grid-template-columns: minmax(20px, 28px) minmax(28px, 40px) minmax(0, 1fr) minmax(28px, 42px);
+    gap: 4px;
+    font-size: 0.8rem;
+    padding: 8px 4px;
   }
+
+  .halfyear span { font-size: 0.75rem; }
 
   .halfyear .sonstige {
-    justify-content: flex-start;
+    gap: 2px;
   }
 
-  input { width: 38px; padding: 5px; font-size: 0.85rem; }
+  .halfyear .sonstige input,
+  .halfyear .klausur {
+    padding: 5px 1px;
+    font-size: 0.78rem;
+  }
 
   .button-group.primary,
   .button-group.backup-group,
