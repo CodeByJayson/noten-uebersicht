@@ -747,6 +747,9 @@ function analyseAbiPrognose() {
   let weightedSum = 0;
   let weightedCount = 0;
 
+  let unterkurse = 0; // Ergebnisse unter 5 Punkten
+  let nullPunkte = 0; // Ergebnisse mit 0 Punkten (Ausschlussgrund)
+
   let subjectDetails = [];
 
   subjects.forEach((sub, i) => {
@@ -773,6 +776,9 @@ function analyseAbiPrognose() {
 
         weightedSum += note * gewicht;
         weightedCount += gewicht;
+
+        if (note < 5) unterkurse++;
+        if (note === 0) nullPunkte++;
       }
     }
 
@@ -795,35 +801,46 @@ function analyseAbiPrognose() {
     return;
   }
 
-  const avgPoints = weightedSum / weightedCount;
-  const block1 = (avgPoints / 15) * 600;
+  const avgPoints = weightedSum / weightedCount;   // 0-15, LKs bereits doppelt gewichtet
+  const erreichtesMaximum = weightedCount * 15;     // bisher maximal möglich gewesen (NICHT 600)
 
-  let block1Status = "";
-  if (block1 < 200) block1Status = "🔴 unter Mindestqualifikation (200 nötig)";
-  else if (block1 < 300) block1Status = "🟠 knapp über Minimum";
-  else if (block1 < 450) block1Status = "🟡 solide";
-  else block1Status = "🟢 stark";
-
-  const geschaetzteBlock2 = (avgPoints / 15) * 300;
-  const geschaetzteGesamt = block1 + geschaetzteBlock2;
-
-  // Punkte (0-15) in Schulnote (1-6) umrechnen, linear angenähert
+  // Amtliche Punktetabelle statt linearer Näherung
   function punkteZuNote(p) {
-    return (6 - p / 3).toFixed(1);
+    if (p >= 13) return "1";
+    if (p >= 10) return "2";
+    if (p >= 7) return "3";
+    if (p >= 4) return "4";
+    if (p >= 1) return "5";
+    return "6";
   }
 
-  const noteAktuell = punkteZuNote(avgPoints);
+  // Hochrechnung auf alle 40 Halbjahresergebnisse (Annahme: gleicher Schnitt bleibt bestehen)
+  const block1Prognose = (avgPoints / 15) * 600;
+
+  let prognoseStatus = "";
+  if (block1Prognose < 200) prognoseStatus = "🔴 unter Mindestqualifikation (200 nötig)";
+  else if (block1Prognose < 300) prognoseStatus = "🟠 knapp über Minimum";
+  else if (block1Prognose < 450) prognoseStatus = "🟡 solide";
+  else prognoseStatus = "🟢 stark";
 
   let html = `
     <div class="analysis">
-      <h3>🎓 Abi-Prognose (Block 1)</h3>
-      <p style="font-size:0.9em; opacity:0.7;">Basiert auf dem Thüringer Modell (LKs zählen doppelt, max. 600 Punkte in Block 1). In anderen Bundesländern können Gewichtung und Punktegrenzen abweichen.</p>
-      <p style="font-size:0.9em; opacity:0.8;">📌 Hochrechnung: Es wird angenommen, dass dein bisheriger Punkteschnitt in <b>allen</b> noch fehlenden Halbjahresleistungen ebenso erreicht wird. Das ist <u>nicht</u> dein aktueller Punktestand, sondern eine Prognose bei gleichbleibender Leistung.</p>
+      <h3>🎓 Abi-Prognose – Block 1 (Qualifikationsphase)</h3>
+      <p style="font-size:0.9em; opacity:0.7;">Basiert auf dem Thüringer Modell (LKs zählen doppelt, max. 600 Punkte über alle 4 Halbjahre). In anderen Bundesländern können Gewichtung und Grenzen abweichen.</p>
       <hr>
-      <p><b>Punkteschnitt bisher (gewichtet):</b> ${avgPoints.toFixed(2)} / 15 (entspricht Note ${noteAktuell})</p>
-      <p><b>Hochgerechnete Block 1 Punkte:</b> ${block1.toFixed(0)} / 600 → ${block1Status}</p>
+
+      <p><b>📌 Aktueller Punktestand (nur eingetragene Halbjahre):</b></p>
+      <p>${weightedSum.toFixed(0)} von bisher maximal möglichen ${erreichtesMaximum} Punkten (Ø ${avgPoints.toFixed(2)} / 15, Note ${punkteZuNote(avgPoints)})</p>
+      <p style="font-size:0.85em; opacity:0.7;">Das sind ${weightedCount} von insgesamt 40 einzubringenden Halbjahresergebnissen (LK-Halbjahre zählen dabei doppelt). Die 200-Punkte-Mindestgrenze gilt erst für das <b>Endergebnis nach allen 4 Halbjahren</b> – ein Vergleich damit ist jetzt, nach erst 2 von 4 Halbjahren, noch nicht aussagekräftig.</p>
+
       <hr>
-      <p><b>Gewichtung pro Fach:</b></p>
+
+      <p><b>🔮 Prognose, falls dein Schnitt so bleibt:</b></p>
+      <p>Hochgerechnet auf alle 40 Halbjahresergebnisse: <b>${block1Prognose.toFixed(0)} / 600</b> → ${prognoseStatus}</p>
+      <p style="font-size:0.85em; opacity:0.7;">Diese Zahl ist <u>kein</u> aktueller Punktestand, sondern eine reine Annahme: "Was, wenn ich in den restlichen Halbjahren genauso weitermache wie bisher?"</p>
+
+      <hr>
+      <p><b>Schnitt pro Fach (bisher):</b></p>
   `;
 
   subjectDetails.forEach(s => {
@@ -832,11 +849,12 @@ function analyseAbiPrognose() {
 
   html += `
       <hr>
-      <p><b>📌 Grobe Gesamtschätzung:</b></p>
-      <p>Angenommen, auch die Prüfungsleistungen (Block 2) liegen auf demselben Niveau:</p>
-      <p>Geschätzte Gesamtpunktzahl: ca. ${geschaetzteGesamt.toFixed(0)} / 900</p>
-      <p><b>Erwarteter Gesamt-Notendurchschnitt: ca. ${noteAktuell}</b></p>
-      <p style="font-size:0.9em; opacity:0.7;">⚠️ Nur eine grobe, unverbindliche Orientierung – kein offizielles Ergebnis. Zulassungsregeln, Streichfächer-Vorgaben und tatsächliche Prüfungsleistung sind nicht vollständig abgebildet. Nutzer aus anderen Bundesländern sollten sich zusätzlich über die dort geltenden Regeln informieren.</p>
+      <p><b>⚠️ Zulassungsbedingungen im Blick:</b></p>
+      <p>Ergebnisse unter 5 Punkten bisher: <b>${unterkurse}</b> (am Ende dürfen es insgesamt höchstens 8 sein)</p>
+      <p>Ergebnisse mit 0 Punkten: <b>${nullPunkte}</b> ${nullPunkte > 0 ? "🔴 Achtung: 0 Punkte gelten als Ausschlussgrund!" : "🟢 keine"}</p>
+
+      <hr>
+      <p style="font-size:0.85em; opacity:0.7;">⚠️ Alles hier ist eine unverbindliche Orientierung, kein offizielles Ergebnis. Die Streichregeln (am Ende zählen nur die besten Grundkurs-Ergebnisse zu den 40 Halbjahresergebnissen), Block 2 (Prüfungen) und die exakte Notentabelle für die Gesamtnote sind hier nicht abgebildet. Nutzer aus anderen Bundesländern sollten sich zusätzlich über die dort geltenden Regeln informieren.</p>
     </div>
   `;
 
