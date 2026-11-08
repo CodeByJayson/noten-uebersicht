@@ -634,64 +634,177 @@ function analyseTrend() {
 
 // Streich-Fächer
 function analyseStreichfaecher() {
+  const semesterNames = ["11/1", "11/2", "12/1", "12/2"];
 
-  let subjectsScore = [];
+  function isStreakable(subName) {
+    if (subName.includes("(LK)")) return false;
+    if (subName.includes("(mündlich)")) return false;
+    const lower = subName.toLowerCase();
+    if (lower.includes("deutsch")) return false;
+    if (lower.includes("mathe")) return false;
+    return true;
+  }
 
+  function reasonExcluded(subName) {
+    if (subName.includes("(LK)")) return "Leistungskurs";
+    if (subName.includes("(mündlich)")) return "mündliches Abi";
+    const lower = subName.toLowerCase();
+    if (lower.includes("deutsch")) return "Deutsch";
+    if (lower.includes("mathe")) return "Mathe";
+    return "ausgeschlossen";
+  }
+
+  // Alle Noten mit Metadaten sammeln
+  let allResults = [];
   subjects.forEach((sub, i) => {
-
-    let total = 0;
-    let count = 0;
+    const isLK = sub.name.includes("(LK)");
+    const weight = isLK ? 2 : 1;
+    const streakable = isStreakable(sub.name);
 
     for (let h = 1; h <= 4; h++) {
-
       const k = parseFloat(document.getElementById(`k${i}_${h}`).value);
-
       let sonstArr = [];
       for (let s = 1; s <= 5; s++) {
         let val = parseFloat(document.getElementById(`s${i}_${h}_${s}`).value);
         if (!isNaN(val)) sonstArr.push(val);
       }
-
-      if (!isNaN(k) && sonstArr.length > 0) {
-        const avg = sonstArr.reduce((a,b)=>a+b,0) / sonstArr.length;
-        const note = calcNote(k, sonstArr);
-
-        total += note;
-        count++;
+      const note = calcNote(k, sonstArr);
+      if (note !== null) {
+        allResults.push({
+          subIndex: i,
+          subName: sub.name,
+          halfYear: h,
+          value: note,
+          weight: weight,
+          streakable: streakable
+        });
       }
-    }
-
-    if (count > 0) {
-      subjectsScore.push({
-        name: sub.name,
-        avg: total / count
-      });
     }
   });
 
-  subjectsScore.sort((a, b) => a.avg - b.avg);
+  if (allResults.length === 0) {
+    document.getElementById("result").innerHTML = `
+      <div class="analysis">
+        <h3>🧹 Streich-Fächer Optimierung</h3>
+        <p>Noch keine Noten eingetragen.</p>
+      </div>
+    `;
+    return;
+  }
 
+  // Aktuelle Schnitte
+  const totalSimpleSum = allResults.reduce((s, r) => s + r.value, 0);
+  const currentSimple = totalSimpleSum / allResults.length;
+  const totalWeightedSum = allResults.reduce((s, r) => s + r.value * r.weight, 0);
+  const totalWeightedCount = allResults.reduce((s, r) => s + r.weight, 0);
+  const currentWeighted = totalWeightedSum / totalWeightedCount;
+
+  const eligible = allResults.filter(r => r.streakable);
+
+  // Kombinationen-Generator
+  function* combinations(arr, k) {
+    if (k === 0) { yield []; return; }
+    if (arr.length < k) return;
+    for (let i = 0; i <= arr.length - k; i++) {
+      for (const tail of combinations(arr.slice(i + 1), k - 1)) {
+        yield [arr[i], ...tail];
+      }
+    }
+  }
+
+  // Constraints: max 2 pro Fach, max 1 pro Halbjahr
+  function isValid(subset) {
+    const subjCount = {};
+    const hyCount = {};
+    for (const item of subset) {
+      subjCount[item.subIndex] = (subjCount[item.subIndex] || 0) + 1;
+      hyCount[item.halfYear] = (hyCount[item.halfYear] || 0) + 1;
+    }
+    if (Object.values(subjCount).some(c => c > 2)) return false;
+    if (Object.values(hyCount).some(c => c > 1)) return false;
+    return true;
+  }
+
+  // Beste Kombination (max. 4 Streichungen) suchen
+  let bestSubset = [];
+  let bestWeighted = currentWeighted;
+  let bestSimple = currentSimple;
+
+  for (let k = 1; k <= Math.min(4, eligible.length); k++) {
+    for (const subset of combinations(eligible, k)) {
+      if (!isValid(subset)) continue;
+
+      const sum = subset.reduce((s, r) => s + r.value, 0);
+      const wSum = subset.reduce((s, r) => s + r.value * r.weight, 0);
+      const wCount = subset.reduce((s, r) => s + r.weight, 0);
+      const newWeighted = (totalWeightedSum - wSum) / (totalWeightedCount - wCount);
+
+      if (newWeighted > bestWeighted) {
+        bestWeighted = newWeighted;
+        bestSimple = (totalSimpleSum - sum) / (allResults.length - k);
+        bestSubset = subset;
+      }
+    }
+  }
+
+  // Ausgabe
   let html = `
     <div class="analysis">
-      <h3>🧹 Streich-Fächer Analyse</h3>
-      <p>→ Welche Fächer ziehen deinen Schnitt runter</p>
+      <h3>🧹 Streich-Fächer Optimierung</h3>
+      <p style="font-size:0.88em; opacity:0.75;">
+        Regeln: max. 4 Streichungen · max. 2 pro Fach · max. 1 pro Halbjahr<br>
+        Nicht streichbar: Leistungskurse, mündliches Abi-Fach, Deutsch, Mathe
+      </p>
       <hr>
   `;
 
-  subjectsScore.forEach((s, i) => {
+  if (bestSubset.length === 0) {
+    if (eligible.length === 0) {
+      html += `<p>Keine streichbaren Fächer vorhanden (alle Fächer sind LK, mündlich, Deutsch oder Mathe).</p>`;
+    } else {
+      html += `<p>Durch Streichung lässt sich der Schnitt nicht verbessern (alle streichbaren Ergebnisse liegen über dem aktuellen Durchschnitt).</p>`;
+    }
+  } else {
+    const improvement = bestWeighted - currentWeighted;
+    const improvementSimple = bestSimple - currentSimple;
 
-    let impact = "";
+    html += `
+      <p><b>Aktueller Schnitt:</b> ${currentSimple.toFixed(2)} · real (LKs ×2): ${currentWeighted.toFixed(2)}</p>
+      <p><b>Nach Streichung:</b> ${bestSimple.toFixed(2)} · real: ${bestWeighted.toFixed(2)}</p>
+      <p><b>Verbesserung:</b> ${improvementSimple >= 0 ? "+" : ""}${improvementSimple.toFixed(2)} · real: ${improvement >= 0 ? "+" : ""}${improvement.toFixed(2)}</p>
+      <hr>
+      <p><b>Empfohlene Streichungen (${bestSubset.length}):</b></p>
+    `;
 
-    if (i === 0) impact = "❌ stärkster Negativ-Einfluss";
-    else if (i === 1) impact = "⚠️ hoher Einfluss";
-    else if (i >= subjectsScore.length - 2) impact = "🟢 stabil / positiv";
-    else impact = "➖ neutral";
+    const sortedBest = [...bestSubset].sort((a, b) => a.halfYear - b.halfYear || a.value - b.value);
+    sortedBest.forEach((r, idx) => {
+      html += `<p>${idx + 1}. <b>${r.subName}</b> ${semesterNames[r.halfYear - 1]}: ${r.value.toFixed(2)} Punkte</p>`;
+    });
 
-    html += `<p><b>${s.name}</b>: ${s.avg.toFixed(1)} NP → ${impact}</p>`;
-  });
+    html += `<p style="font-size:0.85em; opacity:0.7; margin-top:10px;">Verbleibend: ${allResults.length - bestSubset.length} von ${allResults.length} Halbjahresergebnissen</p>`;
+  }
+
+  // Nicht streichbare Fächer
+  const excluded = subjects.filter(s => !isStreakable(s.name));
+  if (excluded.length > 0) {
+    html += `<hr><p><b>Nicht streichbar:</b></p>`;
+    excluded.forEach(s => {
+      html += `<p>• ${s.name} <span style="opacity:0.7;">(${reasonExcluded(s.name)})</span></p>`;
+    });
+  }
+
+  // Alle streichbaren Ergebnisse (mit ✅ markiert = empfohlen)
+  if (eligible.length > 0) {
+    html += `<hr><p><b>Alle streichbaren Ergebnisse:</b></p>`;
+    const sortedEligible = [...eligible].sort((a, b) => a.value - b.value);
+    sortedEligible.forEach(r => {
+      const isSelected = bestSubset.some(b => b.subIndex === r.subIndex && b.halfYear === r.halfYear);
+      const marker = isSelected ? "✅" : "▫️";
+      html += `<p>${marker} ${r.subName} ${semesterNames[r.halfYear - 1]}: ${r.value.toFixed(2)}</p>`;
+    });
+  }
 
   html += `</div>`;
-
   document.getElementById("result").innerHTML = html;
 }
 
@@ -743,120 +856,224 @@ function analysePuffer() {
 
 // Abi-Prognose mit LK-Gewichtung 
 function analyseAbiPrognose() {
+  const semesterNames = ["11/1", "11/2", "12/1", "12/2"];
 
-  let weightedSum = 0;
-  let weightedCount = 0;
+  function isStreakable(subName) {
+    if (subName.includes("(LK)")) return false;
+    if (subName.includes("(mündlich)")) return false;
+    const lower = subName.toLowerCase();
+    if (lower.includes("deutsch")) return false;
+    if (lower.includes("mathe")) return false;
+    return true;
+  }
 
-  let unterkurse = 0; // Ergebnisse unter 5 Punkten
-  let nullPunkte = 0; // Ergebnisse mit 0 Punkten (Ausschlussgrund)
-
-  let subjectDetails = [];
-
+  // === 1. Alle Ergebnisse sammeln ===
+  let allResults = [];
   subjects.forEach((sub, i) => {
     const isLK = sub.name.includes("(LK)");
-    const gewicht = isLK ? 2 : 1;
-
-    let subjectSum = 0;
-    let subjectCount = 0;
-
+    const weight = isLK ? 2 : 1;
+    const streakable = isStreakable(sub.name);
     for (let h = 1; h <= 4; h++) {
       const k = parseFloat(document.getElementById(`k${i}_${h}`).value);
-
       let sonstArr = [];
       for (let s = 1; s <= 5; s++) {
         let val = parseFloat(document.getElementById(`s${i}_${h}_${s}`).value);
         if (!isNaN(val)) sonstArr.push(val);
       }
-
       const note = calcNote(k, sonstArr);
-
-      if (note !== null) {
-        subjectSum += note;
-        subjectCount++;
-
-        weightedSum += note * gewicht;
-        weightedCount += gewicht;
-
-        if (note < 5) unterkurse++;
-        if (note === 0) nullPunkte++;
-      }
-    }
-
-    if (subjectCount > 0) {
-      subjectDetails.push({
-        name: sub.name,
-        avg: subjectSum / subjectCount,
-        isLK: isLK
+      allResults.push({
+        subIndex: i, subName: sub.name, halfYear: h,
+        value: note, weight, streakable, filled: note !== null
       });
     }
   });
 
-  if (weightedCount === 0) {
+  const filled = allResults.filter(r => r.filled);
+  const empty = allResults.filter(r => !r.filled);
+
+  if (filled.length === 0) {
     document.getElementById("result").innerHTML = `
       <div class="analysis">
         <h3>🎓 Abi-Prognose</h3>
         <p>Noch keine Noten eingetragen.</p>
-      </div>
-    `;
+      </div>`;
     return;
   }
 
-  const avgPoints = weightedSum / weightedCount;   // 0-15, LKs bereits doppelt gewichtet
-  const erreichtesMaximum = weightedCount * 15;     // bisher maximal möglich gewesen (NICHT 600)
+  // === 2. Streich-Optimierung auf den bereits gefüllten Ergebnissen ===
+  const eligible = filled.filter(r => r.streakable);
 
-  // Amtliche Punktetabelle statt linearer Näherung
-  function punkteZuNote(p) {
-    if (p >= 13) return "1";
-    if (p >= 10) return "2";
-    if (p >= 7) return "3";
-    if (p >= 4) return "4";
-    if (p >= 1) return "5";
-    return "6";
+  function* combinations(arr, k) {
+    if (k === 0) { yield []; return; }
+    if (arr.length < k) return;
+    for (let i = 0; i <= arr.length - k; i++) {
+      for (const tail of combinations(arr.slice(i + 1), k - 1)) yield [arr[i], ...tail];
+    }
   }
 
-  // Hochrechnung auf alle 40 Halbjahresergebnisse (Annahme: gleicher Schnitt bleibt bestehen)
-  const block1Prognose = (avgPoints / 15) * 600;
+  function isValidStreak(subset) {
+    const sc = {}, hc = {};
+    for (const it of subset) {
+      sc[it.subIndex] = (sc[it.subIndex] || 0) + 1;
+      hc[it.halfYear] = (hc[it.halfYear] || 0) + 1;
+    }
+    return !Object.values(sc).some(c => c > 2)
+        && !Object.values(hc).some(c => c > 1);
+  }
 
-  let prognoseStatus = "";
-  if (block1Prognose < 200) prognoseStatus = "🔴 unter Mindestqualifikation (200 nötig)";
-  else if (block1Prognose < 300) prognoseStatus = "🟠 knapp über Minimum";
-  else if (block1Prognose < 450) prognoseStatus = "🟡 solide";
-  else prognoseStatus = "🟢 stark";
+  const totalSum = filled.reduce((s, r) => s + r.value * r.weight, 0);
+  const totalCount = filled.reduce((s, r) => s + r.weight, 0);
+  const rawAvg = totalSum / totalCount;
 
+  let bestSet = [], bestSum = totalSum, bestCount = totalCount, bestAvg = rawAvg;
+
+  for (let k = 1; k <= Math.min(4, eligible.length); k++) {
+    for (const subset of combinations(eligible, k)) {
+      if (!isValidStreak(subset)) continue;
+      const dSum = subset.reduce((s, r) => s + r.value * r.weight, 0);
+      const dCount = subset.reduce((s, r) => s + r.weight, 0);
+      const nCount = totalCount - dCount;
+      const nSum = totalSum - dSum;
+      if (nCount === 0) continue;
+      const nAvg = nSum / nCount;
+      if (nAvg > bestAvg + 1e-9) {
+        bestAvg = nAvg; bestSum = nSum; bestCount = nCount; bestSet = subset;
+      }
+    }
+  }
+
+  // === 3. Prognose (40-Slot-Modell, LKs ×2) ===
+  const block1Prognose = (bestAvg / 15) * 600;
+
+  // === 4. Rückwärtsrechnung ===
+  const emptyCount = empty.reduce((s, r) => s + r.weight, 0);
+  const totalFinalCount = bestCount + emptyCount;
+
+  const userGoal = parseFloat(localStorage.getItem("goal")) || 10;
+  const userGoalBlock1 = Math.round(userGoal * 40);
+
+  function neededAvg(target) {
+    if (emptyCount === 0) return null;
+    const targetAvgPoints = target / 40;
+    return (targetAvgPoints * totalFinalCount - bestSum) / emptyCount;
+  }
+
+  function statusOf(needed) {
+    if (needed === null) return { emoji: "✔️", text: "alle Noten vorhanden" };
+    if (needed < 0)      return { emoji: "✅", text: "bereits übertroffen" };
+    if (needed > 15)     return { emoji: "🔴", text: "unrealistisch" };
+    if (needed > 12)     return { emoji: "🟠", text: "sehr schwer" };
+    if (needed > 10)     return { emoji: "🟡", text: "machbar" };
+    return { emoji: "🟢", text: "gut erreichbar" };
+  }
+
+  const targetSet = new Set([350, 400, 450, userGoalBlock1]);
+  const targets = [...targetSet].sort((a, b) => a - b);
+
+  // === 5. HTML-Ausgabe ===
   let html = `
     <div class="analysis">
-      <h3>🎓 Abi-Prognose – Block 1 (Qualifikationsphase)</h3>
-      <p style="font-size:0.9em; opacity:0.7;">Basiert auf dem Thüringer Modell (LKs zählen doppelt, max. 600 Punkte über alle 4 Halbjahre). In anderen Bundesländern können Gewichtung und Grenzen abweichen.</p>
+      <h3>🎓 Abi-Prognose – Block 1</h3>
+      <p style="font-size:0.88em; opacity:0.7;">
+        Thüringer Modell: LKs ×2, max. 600 Punkte (40 gewichtete Halbjahresergebnisse).<br>
+        Streichregeln angewandt: max. 4 gesamt · max. 2/Fach · max. 1/Halbjahr · LK/mündlich/Deutsch/Mathe ausgeschlossen.
+      </p>
       <hr>
 
-      <p><b>📌 Aktueller Punktestand (nur eingetragene Halbjahre):</b></p>
-      <p>${weightedSum.toFixed(0)} von bisher maximal möglichen ${erreichtesMaximum} Punkten (Ø ${avgPoints.toFixed(2)} / 15, Note ${punkteZuNote(avgPoints)})</p>
-      <p style="font-size:0.85em; opacity:0.7;">Das sind ${weightedCount} von insgesamt 40 einzubringenden Halbjahresergebnissen (LK-Halbjahre zählen dabei doppelt). Die 200-Punkte-Mindestgrenze gilt erst für das <b>Endergebnis nach allen 4 Halbjahren</b> – ein Vergleich damit ist jetzt, nach erst 2 von 4 Halbjahren, noch nicht aussagekräftig.</p>
-
-      <hr>
-
-      <p><b>🔮 Prognose, falls dein Schnitt so bleibt:</b></p>
-      <p>Hochgerechnet auf alle 40 Halbjahresergebnisse: <b>${block1Prognose.toFixed(0)} / 600</b> → ${prognoseStatus}</p>
-      <p style="font-size:0.85em; opacity:0.7;">Diese Zahl ist <u>kein</u> aktueller Punktestand, sondern eine reine Annahme: "Was, wenn ich in den restlichen Halbjahren genauso weitermache wie bisher?"</p>
-
-      <hr>
-      <p><b>Schnitt pro Fach (bisher):</b></p>
+      <p><b>📌 Aktueller Stand</b> (nur eingetragene Noten):</p>
+      <p>Ø <b style="font-size:1.15em;">${bestAvg.toFixed(2)}</b> Punkte über ${bestCount} gewichtete Ergebnisse</p>
+      <p style="font-size:0.85em; opacity:0.7;">Roh-Schnitt ohne Streichung: ${rawAvg.toFixed(2)}</p>
   `;
 
-  subjectDetails.forEach(s => {
-    html += `<p>${s.name}${s.isLK ? " 🔥 (×2)" : ""}: ${s.avg.toFixed(2)} (Note ${punkteZuNote(s.avg)})</p>`;
-  });
+  if (bestSet.length > 0) {
+    html += `<p style="font-size:0.88em; opacity:0.85;"><b>Optimale Streichung (${bestSet.length}):</b> `;
+    html += bestSet.map(r =>
+      `${r.subName} ${semesterNames[r.halfYear - 1]} (${r.value.toFixed(1)})`
+    ).join(", ");
+    html += `</p>`;
+  } else {
+    html += `<p style="font-size:0.88em; opacity:0.7;">Keine Streichung verbessert den Schnitt.</p>`;
+  }
 
   html += `
       <hr>
-      <p><b>⚠️ Zulassungsbedingungen im Blick:</b></p>
-      <p>Ergebnisse unter 5 Punkten bisher: <b>${unterkurse}</b> (am Ende dürfen es insgesamt höchstens 8 sein)</p>
-      <p>Ergebnisse mit 0 Punkten: <b>${nullPunkte}</b> ${nullPunkte > 0 ? "🔴 Achtung: 0 Punkte gelten als Ausschlussgrund!" : "🟢 keine"}</p>
-
+      <p><b>🔮 Prognose (falls Schnitt so bleibt):</b></p>
+      <p style="font-size:1.4em; font-weight:bold; margin:8px 0;">${block1Prognose.toFixed(0)} / 600 Punkte</p>
+      <p style="font-size:0.85em; opacity:0.7;">
+        Hochrechnung: Ø ${bestAvg.toFixed(2)} × 40. Kein aktueller Punktestand – reine Annahme „so weitermachen wie bisher".
+      </p>
       <hr>
-      <p style="font-size:0.85em; opacity:0.7;">⚠️ Alles hier ist eine unverbindliche Orientierung, kein offizielles Ergebnis. Die Streichregeln (am Ende zählen nur die besten Grundkurs-Ergebnisse zu den 40 Halbjahresergebnissen), Block 2 (Prüfungen) und die exakte Notentabelle für die Gesamtnote sind hier nicht abgebildet. Nutzer aus anderen Bundesländern sollten sich zusätzlich über die dort geltenden Regeln informieren.</p>
-    </div>
+      <p><b>🎯 Rückwärtsrechnung – was brauchst du noch?</b></p>
   `;
+
+  if (emptyCount === 0) {
+    html += `<p style="font-size:0.9em; opacity:0.8;">
+      Alle ${bestCount} gewichteten Ergebnisse sind eingetragen – die Block-1-Punkte stehen quasi fest.
+    </p>`;
+  } else {
+    html += `<p style="font-size:0.88em; opacity:0.75;">
+      Noch ${emptyCount} gewichtete Slots offen. Um ein Ziel zu erreichen, brauchst du in diesen Slots im Schnitt:
+    </p>`;
+    html += `<table style="width:100%; margin-top:12px; border-collapse:collapse;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15); text-align:left;">
+        <th style="padding:8px;">Ziel (Block 1)</th>
+        <th style="padding:8px;">Ø nötig</th>
+        <th style="padding:8px;">Status</th>
+      </tr>`;
+
+    targets.forEach(t => {
+      const needed = neededAvg(t);
+      const s = statusOf(needed);
+      const isUserGoal = t === userGoalBlock1;
+      const display = needed === null ? "–" : (needed < 0 ? "– (übertroffen)" : needed.toFixed(2) + " NP");
+      html += `
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+          <td style="padding:8px;">${t}${isUserGoal ? " ⭐" : ""}</td>
+          <td style="padding:8px; font-weight:bold;">${display}</td>
+          <td style="padding:8px;">${s.emoji} ${s.text}</td>
+        </tr>`;
+    });
+
+    html += `</table>`;
+    html += `<p style="font-size:0.83em; opacity:0.65; margin-top:10px;">
+      ⭐ = dein persönliches Ziel (Ø ${userGoal} → ${userGoalBlock1} Block-1-Punkte).<br>
+      „Ø nötig" ist der Durchschnitt in <u>allen</u> noch offenen Slots – Streichungen wurden bereits auf die bisherigen Noten angewandt.
+    </p>`;
+  }
+
+  // Fächer-Übersicht
+  html += `<hr><p><b>📊 Fächer-Übersicht:</b></p>`;
+  subjects.forEach((sub, i) => {
+    const subFilled = filled.filter(r => r.subIndex === i);
+    const subEmpty = empty.filter(r => r.subIndex === i);
+    const locked = isStreakable(sub.name) ? "" : " 🔒";
+    const weightTag = sub.name.includes("(LK)") ? " ×2" : "";
+
+    if (subFilled.length > 0) {
+      const avg = subFilled.reduce((s, r) => s + r.value, 0) / subFilled.length;
+      const offen = subEmpty.length > 0 ? `, ${subEmpty.length} offen` : "";
+      html += `<p>${sub.name}${locked}: Ø <b>${avg.toFixed(2)}</b> (${subFilled.length} gefüllt${offen})${weightTag}</p>`;
+    } else {
+      html += `<p>${sub.name}${locked}: noch keine Noten (${subEmpty.length} offen)${weightTag}</p>`;
+    }
+  });
+  html += `<p style="font-size:0.83em; opacity:0.65; margin-top:6px;">🔒 = nicht streichbar (LK, mündlich, Deutsch oder Mathe)</p>`;
+
+  // Zulassungsbedingungen
+  const unterkurse = filled.filter(r => r.value < 5).length;
+  const nullPunkte = filled.filter(r => r.value === 0).length;
+
+  html += `
+      <hr>
+      <p><b>⚠️ Zulassungsbedingungen:</b></p>
+      <p>Ergebnisse unter 5 NP: <b>${unterkurse}</b> ${unterkurse > 8 ? "🔴 zu viele!" : unterkurse > 0 ? "🟡 im Blick behalten" : "🟢 keine"}</p>
+      <p>Ergebnisse mit 0 NP: <b>${nullPunkte}</b> ${nullPunkte > 0 ? "🔴 Achtung!" : "🟢 keine"}</p>
+      <hr>
+      <p style="font-size:0.83em; opacity:0.65;">
+        ⚠️ Unverbindliche Orientierung, kein offizielles Ergebnis. Block 2 (Abiturprüfungen) nicht enthalten.
+        Genaue Streichregeln deiner Schule können von diesem Modell abweichen.
+      </p>
+    </div>`;
 
   document.getElementById("result").innerHTML = html;
 }
@@ -914,6 +1131,14 @@ function analyseHistory() {
     </div>
   `;
 
+  // Zoom-Fenster: 6–13 NP (nur erweitern, wenn Werte außerhalb liegen)
+  const allValues = history.flatMap(h => [h.avg, h.weighted]).filter(v => v !== null);
+  let yMin = 7, yMax = 12;
+  if (allValues.length > 0) {
+    yMin = Math.min(yMin, Math.floor(Math.min(...allValues)));
+    yMax = Math.max(yMax, Math.ceil(Math.max(...allValues)));
+  }
+
   const ctx = document.getElementById("historyChart").getContext("2d");
   if (historyChartInstance) historyChartInstance.destroy();
 
@@ -944,9 +1169,9 @@ function analyseHistory() {
       responsive: true,
       scales: {
         y: {
-          min: 0,
-          max: 15,
-          ticks: { color: "#e2e8f0" },
+          min: yMin,
+          max: yMax,
+          ticks: { color: "#e2e8f0", stepSize: 1 },
           grid: { color: "rgba(255,255,255,0.08)" }
         },
         x: {
